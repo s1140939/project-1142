@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}關於 - 我的網站{% endblock %}
+
+{% block content %}
+<h1>關於我們</h1>
+
+<div style="margin-top: 2rem; background: #f8f9fa; padding: 2rem; border-radius: 8px;">
+    <h2>介紹</h2>
+    <p style="margin-top: 1rem;">
+        這是一個用 Python Flask 框架建立的示範網站。
+        該項目包含了多個模塊，例如網路爬蟲、推薦系統和用戶界面。
+    </p>
+
+    <h2 style="margin-top: 2rem;">技術堆棧</h2>
+    <ul style="margin-top: 1rem; margin-left: 2rem;">
+        <li><strong>後端：</strong> Python Flask</li>
+        <li><strong>前端：</strong> HTML5 & CSS3</li>
+        <li><strong>數據：</strong> Pandas & CSV</li>
+        <li><strong>伺服器：</strong> 開發服務器</li>
+    </ul>
+
+    <h2 style="margin-top: 2rem;">項目結構</h2>
+    <pre style="margin-top: 1rem; background: white; padding: 1rem; border-radius: 4px; overflow-x: auto;">project-1142/
+├── crawler/          # 網路爬蟲模塊
+├── recommendation/   # 推薦系統
+├── ui/               # 用戶界面 (Flask 應用)
+│   ├── app.py
+│   ├── templates/
+│   └── static/
+├── data/             # 數據文件
+└── requirements.txt  # Python 依賴</pre>
+</div>
+{% endblock %}

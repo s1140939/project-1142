@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}我的網站{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: opacity 0.3s;
+        }
+        nav a:hover {
+            opacity: 0.8;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🚀 我的網站</div>
+            <div>
+                <a href="/">首頁</a>
+                <a href="/about">關於</a>
+                <a href="/contact">聯絡</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2026 我的網站。版權所有。</p>
+    </footer>
+</body>
+</html>

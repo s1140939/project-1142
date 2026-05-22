@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}首頁 - 我的網站{% endblock %}
+
+{% block content %}
+<h1>歡迎來到我的網站！</h1>
+<p style="margin-top: 1rem; font-size: 1.1rem;">
+    這是一個用 Python Flask 建立的基本網站。您可以在導覽欄中探索不同的頁面。
+</p>
+
+<div style="margin-top: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    <div style="border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px;">
+        <h3>📚 特色 1</h3>
+        <p>這個網站展示了 Flask 的基本功能，包括路由、模板和表單處理。</p>
+    </div>
+    <div style="border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px;">
+        <h3>🎨 特色 2</h3>
+        <p>使用 HTML5 和 CSS3 設計的響應式網站。</p>
+    </div>
+    <div style="border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px;">
+        <h3>⚡ 特色 3</h3>
+        <p>簡單易用，易於擴展和自訂。</p>
+    </div>
+</div>
+{% endblock %}
