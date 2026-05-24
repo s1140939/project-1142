@@ -6,12 +6,12 @@
 
 ### 1. 安裝依賴
 ```bash
-pip install -r requirements.txt
+pip install -r frontend/requirements.txt
 ```
 
 ### 2. 運行網站
 ```bash
-cd ui
+cd frontend
 python app.py
 ```
 

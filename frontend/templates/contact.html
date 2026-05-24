@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="section">
+  <div class="section-head">
+    <h2>聯絡我們</h2>
+    <p>有問題、希望新增機型或想收到購機建議？請透過表單與我們聯繫。</p>
+  </div>
+
+  {% if success %}
+  <div class="message success">感謝你的留言！我們已收到訊息，會盡快回覆。</div>
+  {% endif %}
+
+  <form class="contact-form" method="post" action="{{ url_for('contact') }}">
+    <label>
+      你的姓名
+      <input type="text" name="name" required>
+    </label>
+    <label>
+      電子郵件
+      <input type="email" name="email" required>
+    </label>
+    <label>
+      留言內容
+      <textarea name="message" rows="5" required></textarea>
+    </label>
+    <button class="button">送出</button>
+  </form>
+</section>
+{% endblock %}

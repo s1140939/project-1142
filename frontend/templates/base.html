@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>筆電推薦 | 你的購機指南</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="{{ url_for('home') }}">筆電推薦</a>
+      <nav>
+        <a href="{{ url_for('home') }}">首頁</a>
+        <a href="{{ url_for('about') }}">關於</a>
+        <a href="{{ url_for('contact') }}">聯絡</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2026 筆電推薦。提供實用的選購建議與筆電資訊。</p>
+    </div>
+  </footer>
+</body>
+</html>

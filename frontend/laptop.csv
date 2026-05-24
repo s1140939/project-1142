@@ -1,0 +1,7 @@
+Brand,Model,Price,CPU,RAM,Storage,Screen,UseCase,Description,Link
+ASUS,Vivobook 15,22900,Intel Core i5,16GB,512GB SSD,15.6" FHD,日常/學習,輕薄續航佳，適合學生與日常使用,https://example.com/asus-vivobook-15
+Apple,MacBook Air M2,33900,Apple M2,8GB,256GB SSD,13.6" Liquid Retina,創作/專業,輕巧高效，適合文書與創作工作,https://example.com/macbook-air-m2
+Lenovo,ThinkBook 14,25900,Intel Core i5,16GB,512GB SSD,14" FHD,商務,商務實用，鍵盤好打字、具安全性,https://example.com/thinkbook-14
+Acer,Swift 3,23900,Intel Core i5,8GB,512GB SSD,14" FHD,影音/娛樂,輕便攜帶，適合旅行與影音娛樂,https://example.com/acer-swift-3
+MSI,Prestige 14,28900,Intel Core i7,16GB,1TB SSD,14" 2.2K,創作/專業,高效能創作機，適合剪輯與設計,https://example.com/msi-prestige-14
+Dell,XPS 13,32900,Intel Core i7,16GB,512GB SSD,13.4" OLED,高效能,高質感螢幕，適合商務與創作者,https://example.com/dell-xps-13

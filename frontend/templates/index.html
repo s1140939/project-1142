@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero">
+  <div>
+    <h1>2026 最強筆電推薦</h1>
+    <p>依照你的預算與使用需求，快速找到最適合的筆電。</p>
+    <div class="hero-actions">
+      <a class="button" href="#recommendations">查看推薦</a>
+      <a class="button button-secondary" href="{{ url_for('contact') }}">聯絡我們</a>
+    </div>
+  </div>
+</section>
+
+<section id="recommendations" class="section">
+  <div class="section-head">
+    <h2>依需求挑選筆電</h2>
+    <p>可依預算與用途篩選，快速找到適合你的機型。</p>
+  </div>
+
+  <form class="filter-form" method="get" action="{{ url_for('home') }}">
+    <label>
+      預算上限 (NT$)
+      <input type="number" name="budget" placeholder="例如 30000" value="{{ budget }}">
+    </label>
+    <label>
+      使用情境
+      <select name="use_case">
+        <option value="">全部用途</option>
+        <option value="日常/學習" {% if selected_use_case == '日常/學習' %}selected{% endif %}>日常/學習</option>
+        <option value="商務" {% if selected_use_case == '商務' %}selected{% endif %}>商務</option>
+        <option value="創作/專業" {% if selected_use_case == '創作/專業' %}selected{% endif %}>創作/專業</option>
+        <option value="影音/娛樂" {% if selected_use_case == '影音/娛樂' %}selected{% endif %}>影音/娛樂</option>
+      </select>
+    </label>
+    <button class="button">篩選推薦</button>
+  </form>
+
+  {% if laptops %}
+  <div class="grid-cards">
+    {% for laptop in laptops %}
+    <article class="card">
+      <h3>{{ laptop.Brand }} {{ laptop.Model }}</h3>
+      <p class="price">NT$ {{ laptop.Price }}</p>
+      <p><strong>用途：</strong>{{ laptop.UseCase }}</p>
+      <p><strong>CPU：</strong>{{ laptop.CPU }} / <strong>RAM：</strong>{{ laptop.RAM }}</p>
+      <p><strong>容量：</strong>{{ laptop.Storage }} / <strong>螢幕：</strong>{{ laptop.Screen }}</p>
+      <p class="card-desc">{{ laptop.Description }}</p>
+      <a class="card-link" href="{{ laptop.Link }}" target="_blank" rel="noreferrer">了解更多</a>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-state">目前沒有符合條件的筆電推薦，請調整預算或用途再試一次。</p>
+  {% endif %}
+</section>
+{% endblock %}
