@@ -213,6 +213,52 @@ df=pd.DataFrame(laptops)
 
 print(df.head())
 
+#去除重複的，保留價格最低的商品，並驗證
+print("原始筆數:",len(df))
+
+duplicates=df[
+    df.duplicated(
+        subset=["name"],
+        keep=False
+    )
+]
+
+print(
+    "找到重複:",
+    len(duplicates)
+)
+
+df=df.sort_values(
+    by="price"
+)
+
+df=df.drop_duplicates(
+    subset=["name"]
+)
+
+df=df.reset_index(
+    drop=True
+)
+
+print(
+    "去重後:",
+    len(df)
+)
+
+remaining=df[
+    df.duplicated(
+        subset=["name"]
+    )
+]
+
+print(
+    "剩餘重複:",
+    len(remaining)
+)
+
+
+
+
 df.to_csv(
     "frontend/laptop.csv",
     index=False,
