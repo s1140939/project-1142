@@ -2,6 +2,8 @@
 
 一個基本的 Python Flask 網站示範，包含多個頁面和功能。
 
+網址:https://project-1142.vercel.app/
+
 ## 🚀 快速開始
 
 ### 1. 安裝依賴
