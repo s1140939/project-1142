@@ -24,9 +24,7 @@ for p in products:
     name = p["name"]
     price = p["price"]
 
-    ###################
-    # 品牌判斷
-    ###################
+    # 品牌
 
     brand = "Unknown"
 
@@ -51,9 +49,30 @@ for p in products:
 
         brand = "HP"
 
-    ###################
+    # CPU
+    cpu="Unknown"
+    cpu_patterns=[
+        r'R[3579]-\d{3,4}[A-Z]*',                         #Ryzen
+        r'Ultra\s*\d+\s*\d+[A-Z]*',                      #Intel Ultra
+        r'N\d+',                                          #Intel N
+        r'Celeron\s*\w+',                                 #Intel Celeron
+        r'i[3579]-\d{4,5}[A-Z]*',                         #Intel i3/i5/i7/i9
+    ]
+
+    if cpu_patterns:
+
+        spec=[]
+
+        for p in cpu_patterns:
+            matches=re.findall(p,name)
+
+            if matches:
+
+                spec.extend(matches)
+        cpu=str(spec)
+
+
     # RAM
-    ###################
 
     ram="Unknown"
 
@@ -70,7 +89,7 @@ for p in products:
 
             num=int(x)
 
-            # 避免把SSD容量當RAM
+            # 避免把SSD當成RAM
             if num<=64:
 
                 values.append(num)
@@ -79,14 +98,12 @@ for p in products:
 
             ram=str(sum(values))+"GB"
 
-    ###################
     # SSD
-    ###################
 
     ssd="Unknown"
 
     ssd_matches=re.findall(
-        r'(\d+)(?:GB|G|TB)',
+        r'(\d+)(?:GB|G)',
         name
     )
 
@@ -98,12 +115,33 @@ for p in products:
 
             num=int(x)
 
+
             # 通常SSD>=128
             if num>=128:
 
                 capacities.append(num)
 
+
         if capacities:
+
+            ssd=str(max(capacities))+"GB"
+    
+    ssd_matches=re.findall(
+        r'(\d+)(?:TB)',
+        name
+    )
+
+    if ssd_matches:
+
+        capacities=[]
+
+        for x in ssd_matches:
+
+            num=int(x)
+            
+            capacities.append(num*1024)
+
+        if capacities :
 
             ssd=str(max(capacities))+"GB"
 
@@ -113,7 +151,8 @@ for p in products:
         "brand":brand,
         "RAM":ram,
         "SSD":ssd,
-        "price":price
+        "CPU":cpu,
+        "price":price,
 
     })
 
