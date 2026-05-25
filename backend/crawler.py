@@ -4,22 +4,23 @@ import re
 
 print("開始抓資料")
 
-url="https://ecshweb.pchome.com.tw/search/v3.3/all/results?q=筆電&page=1&sort=sale/dc"
+all_products=[]
 
-response=requests.get(
-    url,
-    headers={
-        "User-Agent":"Mozilla/5.0"
-    }
-)
+for page in range(1,11):
 
-data=response.json()
+    url=f"https://ecshweb.pchome.com.tw/search/v3.3/all/results?q=筆電&page={page}&sort=sale/dc"
 
-products=data["prods"]
+    response=requests.get(url)
+
+    data=response.json()
+
+    all_products.extend(
+        data["prods"]
+    )
 
 laptops=[]
 
-for p in products:
+for p in all_products:
 
     name = p["name"]
     price = p["price"]
@@ -133,15 +134,55 @@ for p in products:
     
     cpu="Unknown"
     cpu_patterns=[
-        r'R[3579]-\d{3,4}[A-Z]*',          # Ryzen
-        r'Ultra\s*\d+\s*\d+[A-Z]*',        # Intel Ultra
-        r'i[3579]-\d{4,5}[A-Z]*',          # i3/i5/i7/i9
-        r'i[3579]',                        # 只寫i3/i5/i7/i9
-        r'Celeron\s+\w+',                  # Celeron
-        r'\bN\d+\b'                        # Intel N系列
+
+        # Intel i系列
+        r'i[3579]-\d{4,5}[A-Z]{0,3}',
+        r'i[3579]',
+
+        # Intel Core新命名
+        r'Core\s*[3579]\s*\d+[A-Z]{1,3}',
+
+        # Intel Core簡寫
+        r'C[3579][-\s]?\d+[A-Z]{0,3}',  
+
+        # Intel Ultra
+        r'Ultra\s*[3579]-?\s*\d+[A-Z]{1,3}',
+
+        # Intel Ultra簡寫
+        r'U[3579][-\s]?\d+[A-Z]{0,3}', 
+
+        # Ryzen完整寫法
+        r'Ryzen\s*[3579]\s*\d+[A-Z]{0,3}',
+
+        # Ryzen簡寫
+        r'R[3579][-\s]?\d+[A-Z]{0,3}',
+
+        # Celeron
+        r'Celeron\s+\w+',
+
+        # Intel N系列
+        r'\bN\d+\b'
         ]
-    
+        
     spec=[]
+
+    for pattern in cpu_patterns:
+        
+        result=re.findall(
+             pattern,
+             name,
+              re.IGNORECASE
+      )
+
+        if result:
+                
+            spec.extend(result)
+
+
+        if spec:
+        
+            cpu=spec[0]
+
 
     for pattern in cpu_patterns:
         result=re.findall(
