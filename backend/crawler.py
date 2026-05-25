@@ -27,14 +27,33 @@ for p in products:
     # 品牌
 
     from brand_map import brand_map
+    from brand_map import model_map
 
     brand="Unknown"
 
-    for key,value in brand_map.items():
+    for pattern,value in brand_map.items():
         
-        if key.lower() in name.lower():
+        if re.search(
+            pattern,
+            name,
+            re.IGNORECASE
+        ):
+
             brand=value
             break
+
+    if brand=="Unknown":
+
+        for pattern,value in model_map.items():
+
+            if re.search(
+                pattern,
+                name,
+                re.IGNORECASE
+            ):
+
+                brand=value
+                break
 
 
     # RAM
