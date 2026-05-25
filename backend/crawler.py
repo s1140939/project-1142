@@ -26,28 +26,15 @@ for p in products:
 
     # 品牌
 
-    brand = "Unknown"
+    from brand_map import brand_map
 
-    if ("Vivobook" in name or
-        "VivoBook" in name):
+    brand="Unknown"
 
-        brand = "ASUS"
-
-    elif ("Aspire" in name):
-
-        brand = "Acer"
-
-    elif ("IdeaPad" in name):
-
-        brand = "Lenovo"
-
-    elif ("Surface" in name):
-
-        brand = "Microsoft"
-
-    elif ("HP" in name):
-
-        brand = "HP"
+    for key,value in brand_map.items():
+        
+        if key.lower() in name.lower():
+            brand=value
+            break
 
 
     # RAM
