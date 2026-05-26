@@ -1,162 +1,272 @@
 import requests
 import pandas as pd
 import re
+from brand_map import brand_map
+from brand_map import model_map
 
-print("開始抓資料")
+def run_crawler():
+    print("開始抓資料")
 
-url="https://ecshweb.pchome.com.tw/search/v3.3/all/results?q=筆電&page=1&sort=sale/dc"
+    all_products=[]
 
-response=requests.get(
-    url,
-    headers={
-        "User-Agent":"Mozilla/5.0"
-    }
-)
+    for page in range(1,11):
 
-data=response.json()
+        url=f"https://ecshweb.pchome.com.tw/search/v3.3/all/results?q=筆電&page={page}&sort=sale/dc"
 
-products=data["prods"]
+        response=requests.get(url)
 
-laptops=[]
+        data=response.json()
 
-for p in products:
+        all_products.extend(
+            data["prods"]
+      )
 
-    name = p["name"]
-    price = p["price"]
+    laptops=[]
 
-    # 品牌
-
-    from brand_map import brand_map
-
-    brand="Unknown"
-
-    for key,value in brand_map.items():
+    for p in all_products:
         
-        if key.lower() in name.lower():
-            brand=value
-            break
+        name = p["name"]
+        price = p["price"]
 
+        # 品牌
 
-    # RAM
+        brand="Unknown"
 
-    ram="Unknown"
-
-    ram_matches=re.findall(
-        r'(\d+)G[B]?',
-        name
-    )
-
-    if ram_matches:
-
-        values=[]
-
-        for x in ram_matches:
-
-            num=int(x)
-
-            # 避免把SSD當成RAM
-            if num<=64:
-
-                values.append(num)
-
-        if values:
-
-            ram=str(sum(values))+"GB"
-
-    # SSD
-
-    ssd="Unknown"
-
-    ssd_matches=re.findall(
-        r'(\d+)(?:GB|G)',
-        name
-    )
-
-    if ssd_matches:
-
-        capacities=[]
-
-        for x in ssd_matches:
-
-            num=int(x)
-
-
-            # 通常SSD>=128
-            if num>=128:
-
-                capacities.append(num)
-
-
-        if capacities:
-
-            ssd=str(max(capacities))+"GB"
-    
-    ssd_matches=re.findall(
-        r'(\d+)(?:TB)',
-        name
-    )
-
-    if ssd_matches:
-
-        capacities=[]
-
-        for x in ssd_matches:
-
-            num=int(x)
+        for pattern,value in brand_map.items():
             
-            capacities.append(num*1024)
+            if re.search(
+                pattern,
+                name,
+                re.IGNORECASE
+            ):
 
-        if capacities :
+                brand=value
+                break
 
-            ssd=str(max(capacities))+"GB"
+        if brand=="Unknown":
+            
+            for pattern,value in model_map.items():
 
-    # CPU
-    
-    cpu="Unknown"
-    cpu_patterns=[
-        r'R[3579]-\d{3,4}[A-Z]*',          # Ryzen
-        r'Ultra\s*\d+\s*\d+[A-Z]*',        # Intel Ultra
-        r'i[3579]-\d{4,5}[A-Z]*',          # i3/i5/i7/i9
-        r'i[3579]',                        # 只寫i3/i5/i7/i9
-        r'Celeron\s+\w+',                  # Celeron
-        r'\bN\d+\b'                        # Intel N系列
-        ]
-    
-    spec=[]
+                if re.search(
+                    pattern,
+                    name,
+                    re.IGNORECASE
+                ):
 
-    for pattern in cpu_patterns:
-        result=re.findall(
-            pattern,
-            name,
-            re.IGNORECASE
+                    brand=value
+                    break
+
+
+        # RAM
+
+        ram="Unknown"
+
+        ram_matches=re.findall(
+            r'(\d+)G[B]?',
+            name
         )
-        
-        if result:
-            spec.extend(result)
-    
-    if spec:
-        cpu=spec[0]
+
+        if ram_matches:
+
+            values=[]
+
+            for x in ram_matches:
+
+                num=int(x)
+
+                # 避免把SSD當成RAM
+                if num<=64:
+                    values.append(num)
+
+            if values:
+
+                ram=str(sum(values))+"GB"
+
+        # SSD
+
+        ssd="Unknown"
+
+        ssd_matches=re.findall(
+            r'(\d+)(?:GB|G)',
+            name
+        )
+
+        if ssd_matches:
+
+            capacities=[]
+
+            for x in ssd_matches:
+
+                num=int(x)
 
 
-    laptops.append({
+                # 通常SSD>=128
+                if num>=128:
+                    
+                    capacities.append(num)
 
-        "name":name,
-        "brand":brand,
-        "RAM":ram,
-        "SSD":ssd,
-        "CPU":cpu,
-        "price":price,
 
-    })
+            if capacities:
 
-df=pd.DataFrame(laptops)
+                ssd=str(max(capacities))+"GB"
 
-print(df.head())
+        ssd_matches=re.findall(
+            r'(\d+)(?:TB)',
+            name
+        )
 
-df.to_csv(
-    "frontend/laptop.csv",
-    index=False,
-    encoding="utf-8-sig"
-)
+        if ssd_matches:
 
-print("CSV完成")
+            capacities=[]
+
+            for x in ssd_matches:
+
+                num=int(x)
+
+                capacities.append(num*1024)
+
+            if capacities :
+
+                ssd=str(max(capacities))+"GB"
+
+        # CPU
+
+        cpu="Unknown"
+        cpu_patterns=[
+
+            # Intel i系列
+            r'i[3579]-\d{4,5}[A-Z]{0,3}',
+            r'i[3579]',
+
+            # Intel Core新命名
+            r'Core\s*[3579]\s*\d+[A-Z]{1,3}',
+
+            # Intel Core簡寫
+            r'C[3579][-\s]?\d+[A-Z]{0,3}',  
+
+            # Intel Ultra
+            r'Ultra\s*[3579]-?\s*\d+[A-Z]{1,3}',
+
+            # Intel Ultra簡寫
+            r'U[3579][-\s]?\d+[A-Z]{0,3}', 
+
+            # Ryzen完整寫法
+            r'Ryzen\s*[3579]\s*\d+[A-Z]{0,3}',
+
+            # Ryzen簡寫
+            r'R[3579][-\s]?\d+[A-Z]{0,3}',
+
+            # Celeron
+            r'Celeron\s+\w+',
+
+            # Intel N系列
+            r'\bN\d+\b'
+            ]
+
+        spec=[]
+
+        for pattern in cpu_patterns:
+
+            result=re.findall(
+                pattern,
+                name,
+                re.IGNORECASE
+                )
+
+            if result:
+
+                spec.extend(result)
+
+
+            if spec:
+
+                cpu=spec[0]
+
+
+        for pattern in cpu_patterns:
+            result=re.findall(
+                pattern,
+                name,
+                re.IGNORECASE
+            )
+
+            if result:
+                spec.extend(result)
+
+        if spec:
+            cpu=spec[0]
+
+
+        laptops.append({
+
+            "name":name,
+            "brand":brand,
+            "RAM":ram,
+            "SSD":ssd,
+            "CPU":cpu,
+            "price":price,
+
+        })
+
+    df=pd.DataFrame(laptops)
+
+    print(df.head())
+
+    #去除重複的，保留價格最低的商品，並驗證
+    print("原始筆數:",len(df))
+
+    duplicates=df[
+        df.duplicated(
+            subset=["name"],
+            keep=False
+        )
+    ]
+
+    print(
+        "找到重複:",
+        len(duplicates)
+    )
+
+    df=df.sort_values(
+        by="price"
+    )
+
+    df=df.drop_duplicates(
+        subset=["name"]
+    )
+
+    df=df.reset_index(
+        drop=True
+    )
+
+    print(
+        "去重後:",
+        len(df)
+    )
+
+    remaining=df[
+        df.duplicated(
+            subset=["name"]
+        )
+    ]
+
+    print(
+        "剩餘重複:",
+        len(remaining)
+    )
+
+
+
+
+    df.to_csv(
+        "frontend/laptop.csv",
+        index=False,
+        encoding="utf-8-sig"
+    )
+
+    print("CSV完成")
+
+#引用時不執行，直接執行才跑執行
+if __name__=="__main__":
+
+    run_crawler()

@@ -7,121 +7,142 @@ brand_map={
 "Modern":"Gigabyte",
 
 # ASUS
-"Vivobook":"ASUS",
-"VivoBook":"ASUS",
-"Zenbook":"ASUS",
-"ROG":"ASUS",
-"TUF":"ASUS",
-"ExpertBook":"ASUS",
-"Chromebook":"ASUS",
-"ProArt":"ASUS",
+r"Vivobook":"ASUS",
+r"VivoBook":"ASUS",
+r"Zenbook":"ASUS",
+r"ROG":"ASUS",
+r"TUF":"ASUS",
+r"ExpertBook":"ASUS",
+r"Chromebook":"ASUS",
+r"ProArt":"ASUS",
 
 # Acer
-"Aspire":"Acer",
-"Swift":"Acer",
-"Nitro":"Acer",
-"Predator":"Acer",
-"TravelMate":"Acer",
-"Extensa":"Acer",
-"Spin":"Acer",
-"Chromebook":"Acer",
+r"Aspire":"Acer",
+r"Swift":"Acer",
+r"Nitro":"Acer",
+r"Predator":"Acer",
+r"TravelMate":"Acer",
+r"Extensa":"Acer",
+r"Spin":"Acer",
+r"Chromebook":"Acer",
 
 # Lenovo
-"IdeaPad":"Lenovo",
-"Yoga":"Lenovo",
-"Legion":"Lenovo",
-"ThinkPad":"Lenovo",
-"ThinkBook":"Lenovo",
-"LOQ":"Lenovo",
-"V15":"Lenovo",
-"Slim":"Lenovo",
+r"IdeaPad":"Lenovo",
+r"Yoga":"Lenovo",
+r"Legion":"Lenovo",
+r"ThinkPad":"Lenovo",
+r"ThinkBook":"Lenovo",
+r"LOQ":"Lenovo",
+r"V15":"Lenovo",
+r"Slim":"Lenovo",
 
 # HP
-"Pavilion":"HP",
-"Victus":"HP",
-"Omen":"HP",
-"EliteBook":"HP",
-"ProBook":"HP",
-"Envy":"HP",
-"Spectre":"HP",
-"Dragonfly":"HP",
-"ZBook":"HP",
-"Essential":"HP",
+r"Pavilion":"HP",
+r"Victus":"HP",
+r"Omen":"HP",
+r"EliteBook":"HP",
+r"ProBook":"HP",
+r"Envy":"HP",
+r"Spectre":"HP",
+r"Dragonfly":"HP",
+r"ZBook":"HP",
+r"Essential":"HP",
+r"超品系列":"HP",
+r"250RT":"HP",
 
 # Dell
-"Inspiron":"Dell",
-"XPS":"Dell",
-"Latitude":"Dell",
-"Vostro":"Dell",
-"Precision":"Dell",
-"G15":"Dell",
-"Alienware":"Dell",
+r"Inspiron":"Dell",
+r"XPS":"Dell",
+r"Latitude":"Dell",
+r"Vostro":"Dell",
+r"Precision":"Dell",
+r"G15":"Dell",
+r"Alienware":"Dell",
 
 # MSI
-"Katana":"MSI",
-"Sword":"MSI",
-"Stealth":"MSI",
-"Raider":"MSI",
-"Titan":"MSI",
-"Cyborg":"MSI",
-"Modern":"MSI",
-"Prestige":"MSI",
-"Summit":"MSI",
-"Creator":"MSI",
-"Vector":"MSI",
-"Thin":"MSI",
+r"Katana":"MSI",
+r"Sword":"MSI",
+r"Stealth":"MSI",
+r"Raider":"MSI",
+r"Titan":"MSI",
+r"Cyborg":"MSI",
+r"Modern":"MSI",
+r"Prestige":"MSI",
+r"Summit":"MSI",
+r"Creator":"MSI",
+r"Vector":"MSI",
+r"Thin":"MSI",
 
 # Microsoft
-"Surface":"Microsoft",
+r"Surface":"Microsoft",
 
 # Apple
-"MacBook":"Apple",
-"MacBook Air":"Apple",
-"MacBook Pro":"Apple",
+r"MacBook":"Apple",
+r"MacBook Air":"Apple",
+r"MacBook Pro":"Apple",
 
 # Gigabyte
-"AERO":"Gigabyte",
-"Gaming":"Gigabyte",
-"G5":"Gigabyte",
-"G6":"Gigabyte",
+r"AERO":"Gigabyte",
+r"Gaming":"Gigabyte",
+r"G5":"Gigabyte",
+r"G6":"Gigabyte",
 
 # Huawei
-"MateBook":"Huawei",
+r"MateBook":"Huawei",
 
 # LG
-"Gram":"LG",
+r"Gram":"LG",
 
 # Samsung
-"Galaxy Book":"Samsung",
+r"Galaxy Book":"Samsung",
 
 # Fujitsu
-"LIFEBOOK":"Fujitsu",
+r"LIFEBOOK":"Fujitsu",
 
 # Razer
-"Blade":"Razer",
+r"Blade":"Razer",
 
 # ASUS旗下ROG獨立出現
-"Zephyrus":"ASUS",
-"Strix":"ASUS",
-"Flow":"ASUS",
+r"Zephyrus":"ASUS",
+r"Strix":"ASUS",
+r"Flow":"ASUS",
 
 # Acer Predator系列
-"Helios":"Acer",
-"Triton":"Acer",
+r"Helios":"Acer",
+r"Triton":"Acer",
 
 # Lenovo Legion系列
-"Legion Pro":"Lenovo",
-"Legion Slim":"Lenovo",
+r"Legion Pro":"Lenovo",
+r"Legion Slim":"Lenovo",
 
 # MSI電競系列
-"Pulse":"MSI",
-"Crosshair":"MSI",
+r"Pulse":"MSI",
+r"Crosshair":"MSI",
 
 # Chuwi
-"CoreBook":"Chuwi",
-"HeroBook":"Chuwi",
+r"CoreBook":"Chuwi",
+r"HeroBook":"Chuwi",
 
 # Dynabook
-"Dynabook":"Dynabook"
+r"Dynabook":"Dynabook"
+
+}
+
+
+model_map={
+
+# ASUS常見型號開頭
+r'^X\d+':'ASUS',
+r'^E\d+':'ASUS',
+
+# Acer
+r'^AL\d+':'Acer',
+r'^AN\d+':'Acer',
+
+# Lenovo
+r'^83[A-Z0-9]+':'Lenovo',
+
+# HP
+r'^\d+[A-Z]{2}':'HP'
 
 }
