@@ -356,3 +356,54 @@ python backend/update_data.py
 ## 專題網址
 
 https://project-1142.vercel.app/
+
+---
+
+## commit紀錄(更新時間:5/26)
+main:
+da13bce (HEAD -> main, origin/main, origin/HEAD) Merge pull request #2 from s1140939/tingyu  A part finish
+3b97ec3 (origin/tingyu, tingyu) A part完成、README.md更新完畢
+41cb185 新增更新機制
+d730f34 資料去重複
+9e2acee 增加資料量、修改CPU與品牌部分的小bug
+7e9cf32 品牌分析功能完善
+81727d3 Merge pull request #1 from s1140939/tingyu
+986b935 brand map建立、crawler.py完善
+e11c860 CPU提取完成
+915d7e1 crawler.py修正中，卡在CPU，其餘過關
+3732247 資料取得流程完成
+e9a2ef1 5/24 確定使用api路徑
+bbc6427 5/24 fix
+0fc5f0d fix
+a2b3c2b 網站測試
+30e1547 (origin/Elva) 建立網站
+e537035 try
+3fd6cab initalize project structure
+91df4a5 Merge branch 'main' of https://github.com/s1140939/project-1142 :wq# Please enter a commit message to explain why this merge is necessary,
+87b0336 Initial commit
+43b4baa open project
+
+tingyu:
+3b97ec3 (HEAD -> tingyu, origin/tingyu) A part完成、README.md更新完畢
+41cb185 新增更新機制
+d730f34 資料去重複
+9e2acee 增加資料量、修改CPU與品牌部分的小bug
+7e9cf32 品牌分析功能完善
+986b935 brand map建立、crawler.py完善
+e11c860 CPU提取完成
+915d7e1 crawler.py修正中，卡在CPU，其餘過關
+e11c860 CPU提取完成
+915d7e1 crawler.py修正中，卡在CPU，其餘過關
+3732247 資料取得流程完成
+e9a2ef1 5/24 確定使用api路徑
+bbc6427 5/24 fix
+0fc5f0d fix
+a2b3c2b 網站測試
+30e1547 (origin/Elva) 建立網站
+e537035 try
+3fd6cab initalize project structure
+91df4a5 Merge branch 'main' of https://github.com/s1140939/project-1142 :wq# Please enter a commit message to explain why this merge is necessary,
+87b0336 Initial commit
+43b4baa open project
+
+Elva:
