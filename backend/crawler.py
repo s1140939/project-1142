@@ -264,7 +264,7 @@ def run_crawler():
         encoding="utf-8-sig"
     )
 
-    print("CSV更新完成")
+    print("CSV完成")
 
 #引用時不執行，直接執行才跑執行
 if __name__=="__main__":
