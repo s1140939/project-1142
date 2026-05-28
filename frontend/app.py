@@ -11,10 +11,10 @@ def load_laptops():
     if not os.path.exists(DATA_PATH):
         return laptops
 
-    with open(DATA_PATH, encoding='utf-8') as csvfile:
+    with open(DATA_PATH, encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            row['Price'] = int(row.get('Price', '0') or '0')
+            row['price'] = int(row.get('price', '0') or '0')
             laptops.append(row)
     return laptops
 
@@ -26,7 +26,7 @@ def filter_laptops(laptops, use_case, budget):
     if budget:
         try:
             max_price = int(budget)
-            filtered = [item for item in filtered if item.get('Price', 0) <= max_price]
+            filtered = [item for item in filtered if item.get('price', 0) <= max_price]
         except ValueError:
             pass
     return filtered
@@ -38,6 +38,7 @@ def home():
     budget = request.args.get('budget', '').strip()
 
     laptops = load_laptops()
+
     filtered = filter_laptops(laptops, use_case, budget)
 
     return render_template(

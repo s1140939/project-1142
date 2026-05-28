@@ -40,11 +40,11 @@
   <div class="grid-cards">
     {% for laptop in laptops %}
     <article class="card">
-      <h3>{{ laptop.Brand }} {{ laptop.Model }}</h3>
-      <p class="price">NT$ {{ laptop.Price }}</p>
+      <h3>{{ laptop.brand }} {{ laptop.name }}</h3>
+      <p class="price">NT$ {{ laptop.price }}</p>
       <p><strong>用途：</strong>{{ laptop.UseCase }}</p>
       <p><strong>CPU：</strong>{{ laptop.CPU }} / <strong>RAM：</strong>{{ laptop.RAM }}</p>
-      <p><strong>容量：</strong>{{ laptop.Storage }} / <strong>螢幕：</strong>{{ laptop.Screen }}</p>
+      <p><strong>容量：</strong>{{ laptop.SSD }} / <strong>螢幕：</strong>{{ laptop.Screen }}</p>
       <p class="card-desc">{{ laptop.Description }}</p>
       <a class="card-link" href="{{ laptop.Link }}" target="_blank" rel="noreferrer">了解更多</a>
     </article>
