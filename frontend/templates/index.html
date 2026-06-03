@@ -33,6 +33,30 @@
         <option value="影音/娛樂" {% if selected_use_case == '影音/娛樂' %}selected{% endif %}>影音/娛樂</option>
       </select>
     </label>
+    <label>
+  排序方式
+  <select name="sort">
+    <option value="score_desc"
+      {% if selected_sort == 'score_desc' %}selected{% endif %}>
+      推薦評分由高到低
+    </option>
+
+    <option value="score_asc"
+      {% if selected_sort == 'score_asc' %}selected{% endif %}>
+      推薦評分由低到高
+    </option>
+
+    <option value="price_asc"
+      {% if selected_sort == 'price_asc' %}selected{% endif %}>
+      價格由低到高
+    </option>
+
+    <option value="price_desc"
+      {% if selected_sort == 'price_desc' %}selected{% endif %}>
+      價格由高到低
+    </option>
+  </select>
+</label>
     <button class="button">篩選推薦</button>
   </form>
 
@@ -40,11 +64,20 @@
   <div class="grid-cards">
     {% for laptop in laptops %}
     <article class="card">
-      <h3>{{ laptop.brand }} {{ laptop.name }}</h3>
+      <div class="brand-tag">{{ laptop.brand }}</div>
+      <h3 class="product-name">{{ laptop.brand }} {{ laptop.name }}</h3>
+      
       <p class="price">NT$ {{ laptop.price }}</p>
       <p><strong>用途：</strong>{{ laptop.UseCase }}</p>
+      <details class="score-box">
+        <summary>推薦評分：{{ laptop.Score }}分</summary>
+        <ul class="reason-list">
+          {% for reason in laptop.Reason %}
+          <li>{{ reason }}</li>
+          {% endfor %}
+      </details>
       <p><strong>CPU：</strong>{{ laptop.CPU }} / <strong>RAM：</strong>{{ laptop.RAM }}</p>
-      <p><strong>容量：</strong>{{ laptop.SSD }} / <strong>螢幕：</strong>{{ laptop.Screen }}</p>
+      <p><strong>容量：</strong>{{ laptop.SSD }}</p>
       <p class="card-desc">{{ laptop.Description }}</p>
       <a class="card-link" href="{{ laptop.Link }}" target="_blank" rel="noreferrer">了解更多</a>
     </article>

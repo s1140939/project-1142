@@ -162,7 +162,31 @@ textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 24px;
+  overflow: hidden;
 }
+
+
+.brand-tag {
+  background: linear-gradient(135deg, var(--primary), #6f8cff);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 1px;
+  text-align: left;
+  padding: 12px;
+  margin: -24px -24px 18px -24px;
+}
+
+
+
+.product-name {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.35;
+}
+
+
+
 
 .card h3 {
   margin-top: 0;
@@ -206,6 +230,26 @@ textarea {
   border-color: #d1e7dd;
   background: #eff9f2;
   color: #1f5e38;
+}
+
+.score-box {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f1f5ff;
+  border: 1px solid var(--border);
+}
+
+.score-box summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.score-box p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 @media (max-width: 720px) {
