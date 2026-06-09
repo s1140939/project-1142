@@ -67,7 +67,7 @@
       <div class="brand-tag">{{ laptop.brand }}</div>
       <h3 class="product-name">{{ laptop.brand }} {{ laptop.name }}</h3>
       
-      <p class="price">NT$ {{ laptop.price }}</p>
+      <p class="price">NT$ {{ "{:,}".format(laptop.price) }}</p>
       <p><strong>用途：</strong>{{ laptop.UseCase }}</p>
       <details class="score-box">
         <summary>推薦評分：{{ laptop.Score }}分</summary>
@@ -79,7 +79,7 @@
       <p><strong>CPU：</strong>{{ laptop.CPU }} / <strong>RAM：</strong>{{ laptop.RAM }}</p>
       <p><strong>容量：</strong>{{ laptop.SSD }}</p>
       <p class="card-desc">{{ laptop.Description }}</p>
-      <a class="card-link" href="{{ laptop.Link }}" target="_blank" rel="noreferrer">了解更多</a>
+      <a class="card-link" href="{{ laptop.url }}" target="_blank" rel="noreferrer">了解更多</a>
     </article>
     {% endfor %}
   </div>
