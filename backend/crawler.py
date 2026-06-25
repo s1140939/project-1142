@@ -1,10 +1,11 @@
 import requests
 import pandas as pd
 import re
+import os
 from brand_map import brand_map
 from brand_map import model_map
 
-def run_crawler():
+def crawl_laptops(save_csv=True):
     print("開始抓資料")
 
     all_products=[]
@@ -265,16 +266,34 @@ def run_crawler():
 
 
 
+    if save_csv:
+        csv_path = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "frontend",
+            "laptop.csv"
+        )
 
-    df.to_csv(
-        "frontend/laptop.csv",
-        index=False,
-        encoding="utf-8-sig"
-    )
+        df.to_csv(
+            csv_path,
+            index=False,
+            encoding="utf-8-sig"
+        )
 
-    print("CSV完成")
+        print("CSV更新完成")
+
+    print("爬蟲完成，共", len(df), "筆")
+
+    return df
+
 
 #引用時不執行，直接執行才跑執行
+def run_crawler():
+    return crawl_laptops(save_csv=True)
+
 if __name__=="__main__":
 
     run_crawler()
+
+
+
