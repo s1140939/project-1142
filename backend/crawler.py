@@ -28,6 +28,13 @@ def run_crawler():
         name = p["name"]
         price = p["price"]
 
+        product_id = p.get("Id", "")
+
+        if product_id:
+            product_url = "https://24h.pchome.com.tw/prod/" + product_id
+        else:
+            product_url = "Unknown"
+
         # 品牌
 
         brand="Unknown"
@@ -205,6 +212,7 @@ def run_crawler():
             "SSD":ssd,
             "CPU":cpu,
             "price":price,
+            "url":product_url
 
         })
 
