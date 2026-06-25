@@ -7,10 +7,13 @@
     <p>依照你的預算與使用需求，快速找到最適合的筆電。</p>
     <div class="hero-actions">
       <a class="button" href="#recommendations">查看推薦</a>
+      <a class="button button-analysis" href="#analysis">商品分析</a>
       <a class="button button-secondary" href="{{ url_for('contact') }}">聯絡我們</a>
     </div>
   </div>
 </section>
+
+
 
 <section id="recommendations" class="section">
   <div class="section-head">
@@ -140,5 +143,85 @@
   {% else %}
   <p class="empty-state">目前沒有符合條件的筆電推薦，請調整預算或用途再試一次。</p>
   {% endif %}
+
+  <div id="analysis" class="analysis-section">
+  <div class="section-head">
+    <h2>商品資料分析</h2>
+    <p>統計目前資料庫中的筆電資料，呈現品牌、用途分類與價格區間分布。</p>
+  </div>
+
+  <div class="analysis-stats">
+    <div class="stat-card">
+      <span>商品總數</span>
+      <strong>{{ analysis.total_count }}</strong>
+      <small>台筆電</small>
+    </div>
+
+    <div class="stat-card">
+      <span>品牌數量</span>
+      <strong>{{ analysis.brand_count }}</strong>
+      <small>個品牌</small>
+    </div>
+
+    <div class="stat-card">
+      <span>最低價格</span>
+      <strong>NT$ {{ "{:,}".format(analysis.min_price) }}</strong>
+      <small>目前最低價</small>
+    </div>
+
+    <div class="stat-card">
+      <span>最高價格</span>
+      <strong>NT$ {{ "{:,}".format(analysis.max_price) }}</strong>
+      <small>目前最高價</small>
+    </div>
+  </div>
+
+  <div class="analysis-grid">
+    <div class="analysis-card">
+      <h3>品牌商品數量</h3>
+      {% for item in analysis.brand_chart %}
+      <div class="bar-row">
+        <div class="bar-label">
+          <span>{{ item.name }}</span>
+          <span>{{ item.count }}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width: {{ item.percent }}%;"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="analysis-card">
+  <h3>用途分類比例</h3>
+
+  <div class="pie-layout">
+    <div class="real-pie" style="background: conic-gradient({{ analysis.pie_style }});">
+      <div class="pie-center">
+        <div class="pie-icon">💻</div>
+        <div class="pie-title">推薦分析</div>
+        <div class="pie-subtitle">Recommend</div>
+      </div>
+    </div>
+  </div>
+
+    <div class="pie-legend">
+      {% for item in analysis.use_case_chart %}
+      <div class="pie-legend-item">
+        <span class="legend-dot" style="background: {{ item.color }};"></span>
+        <span>{{ item.name }}</span>
+        <strong>{{ item.percent }}%</strong>
+        <small>{{ item.count }} 台</small>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
 </section>
+
+<a href="#" class="back-to-top">
+    ↑
+</a>
+
 {% endblock %}

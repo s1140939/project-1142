@@ -5,7 +5,12 @@ import requests
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 DATA_PATH = os.path.join(os.path.dirname(__file__), 'laptop.csv')
-API_URL = "http://127.0.0.1:8000/api/laptops"
+API_URL = API_BASE_URL = os.getenv(
+    "API_BASE_URL",
+    "https://project-1142-backend.onrender.com"
+)
+
+API_URL = f"{API_BASE_URL}/api/laptops"
 
 """
 篩選分類(全部用途、日常學習、商務、創作專業、影音娛樂)
@@ -189,13 +194,15 @@ def get_recommend_score(row):
     return min(score, 100), reasons[:3]
 
 def load_laptops_from_api():
-    response = requests.get(API_URL, timeout=5)
+    response = requests.get(API_URL, timeout=30)
     response.raise_for_status()
     data = response.json()
     laptops = data.get("data", [])
 
+    print("使用 API 讀取資料，筆數：", len(laptops))
+
     for row in laptops:
-        row['price'] = int(row.get('price', '0') or '0')
+        row['price'] = int(row.get('price', 0) or 0)
         row['UseCase'] = classify_use_case(row)
         row['Score'], row['Reason'] = get_recommend_score(row)
 
@@ -222,6 +229,111 @@ def load_laptops():
     except Exception as e:
         print("API 讀取失敗，改用 CSV：", e)
         return load_laptops_from_csv()
+
+
+def build_analysis(laptops):
+    total_count = len(laptops)
+
+    brand_counts = {}
+    use_case_counts = {
+        "日常/學習": 0,
+        "商務": 0,
+        "影音/娛樂": 0,
+        "創作/專業": 0
+    }
+
+    price_ranges = {
+        "10000以下": 0,
+        "10000~20000": 0,
+        "20000~30000": 0,
+        "30000以上": 0
+    }
+
+    prices = []
+
+    for item in laptops:
+        brand = item.get("brand", "未知品牌") or "未知品牌"
+        use_case = item.get("UseCase", "未分類") or "未分類"
+        price = int(item.get("price", 0) or 0)
+
+        brand_counts[brand] = brand_counts.get(brand, 0) + 1
+
+        if use_case in use_case_counts:
+            use_case_counts[use_case] += 1
+
+        if price > 0:
+            prices.append(price)
+
+            if price < 10000:
+                price_ranges["10000以下"] += 1
+            elif price < 20000:
+                price_ranges["10000~20000"] += 1
+            elif price < 30000:
+                price_ranges["20000~30000"] += 1
+            else:
+                price_ranges["30000以上"] += 1
+
+    max_brand_count = max(brand_counts.values()) if brand_counts else 1
+    max_price_range_count = max(price_ranges.values()) if price_ranges else 1
+
+    brand_chart = [
+        {
+            "name": brand,
+            "count": count,
+            "percent": round(count / max_brand_count * 100)
+        }
+        for brand, count in sorted(
+            brand_counts.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+    ]
+
+    price_chart = [
+        {
+            "name": name,
+            "count": count,
+            "percent": round(count / max_price_range_count * 100)
+        }
+        for name, count in price_ranges.items()
+    ]
+
+    total_use_case = sum(use_case_counts.values()) or 1
+
+    use_case_chart = [
+        {
+            "name": name,
+            "count": count,
+            "percent": round(count / total_use_case * 100)
+        }
+        for name, count in use_case_counts.items()
+    ]
+
+    pie_colors = ["#2f6bff", "#7c6cff", "#30b8c9", "#f5a623"]
+
+    pie_parts = []
+    start = 0
+
+    for index, item in enumerate(use_case_chart):
+        end = start + item["percent"]
+        pie_parts.append(
+            f"{pie_colors[index % len(pie_colors)]} {start}% {end}%"
+        )
+        item["color"] = pie_colors[index % len(pie_colors)]
+        start = end
+
+    pie_style = ", ".join(pie_parts)
+
+    return {
+        "total_count": total_count,
+        "brand_count": len(brand_counts),
+        "min_price": min(prices) if prices else 0,
+        "max_price": max(prices) if prices else 0,
+        "brand_chart": brand_chart,
+        "use_case_chart": use_case_chart,
+        "price_chart": price_chart,
+        "pie_style": pie_style,
+    }
 
 
 def filter_laptops(laptops, use_case, budget, ram_filter, ssd_filter, cpu_filter, brand_filter):
@@ -264,6 +376,7 @@ def home():
     brand_filter = request.args.get('brand', '').strip()
 
     laptops = load_laptops()
+    analysis = build_analysis(laptops)
 
     filtered = filter_laptops(laptops,use_case,budget,ram_filter,ssd_filter,cpu_filter,brand_filter)
 
@@ -283,6 +396,7 @@ def home():
     return render_template(
         'index.html',
         laptops=filtered,
+        analysis=analysis,
         selected_use_case=use_case,
         budget=budget,
         selected_sort=sort_by,
