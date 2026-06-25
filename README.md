@@ -1,3 +1,4 @@
+# 筆電推薦系統 Project 1142
 本專案為大一 Python 程式設計期末專題，目標是建立一個可以依照筆電資料進行推薦與展示的網站。  
 目前專案包含兩個主要部分：
 
@@ -11,17 +12,24 @@ https://project-1142.vercel.app/
 
 ## 專案目標
 
-本系統希望協助使用者快速比較筆電資料，降低選購筆電時查找規格與價格的時間成本。
+使用者在選購筆電時，常需要同時比較品牌、CPU、RAM、SSD、價格與使用情境。本專案希望透過 Python 自動整理電商資料，將非結構化的商品名稱轉換成可分析的資料表，並在網頁中提供篩選、排序與推薦結果。
 
-目前資料來源以 PChome 搜尋 API 為主，透過 Python 自動取得商品名稱與價格，再從商品名稱中擷取：
+目前資料來源以 PChome 搜尋 API 為主，後端會自動取得商品資料，並從商品名稱中擷取：
 
 - 品牌
+- CPU
 - RAM
 - SSD
-- CPU
 - 價格
+- 商品原始網址
 
-整理後的輸出為 `frontend/laptop.csv`，提供前端網站讀取與後續推薦系統使用。
+整理後輸出為：
+
+```text
+frontend/laptop.csv
+```
+
+前端網站會讀取此 CSV，依照預算、用途與推薦分數顯示筆電卡片。
 
 ---
 
@@ -59,41 +67,59 @@ project-1142/
 - requests
 - pandas
 - Regular Expression
+- CSV
 - HTML / CSS
 - Vercel
 - GitHub
 
 ---
 
-## 資料來源與處理流程
+## 取得資料
 
-目前後端資料流程如下：
+本專案目前使用 PChome 搜尋 API 取得商品資料，而不是直接解析前端 HTML。  
+使用 API 的原因是 PChome 商品資料多由 JavaScript 動態載入，直接用 BeautifulSoup 解析 HTML 時不容易取得完整商品資訊。
+
+API 範例：
+
+```text
+https://ecshweb.pchome.com.tw/search/v3.3/all/results?q=筆電&page=1&sort=sale/dc
+```
+
+參數說明：
+
+| 參數 | 說明 |
+|---|---|
+| `q=筆電` | 搜尋關鍵字為「筆電」 |
+| `page=1` | 搜尋結果第 1 頁 |
+| `sort=sale/dc` | 依銷售相關排序 |
+
+目前 `crawler.py` 會抓取第 1 到第 10 頁資料。
+
+---
+
+## 後端資料處理流程
 
 ```text
 PChome 搜尋 API
         ↓
 requests 取得 JSON 資料
         ↓
-擷取商品名稱與價格
+讀取商品名稱、價格、商品 ID
         ↓
-利用正規表示式整理 RAM / SSD / CPU
+組合商品原始網址
         ↓
 利用 brand_map.py 判斷品牌
         ↓
+利用正規表示式擷取 CPU / RAM / SSD
+        ↓
 pandas 建立 DataFrame
         ↓
-去除重複商品
+依價格排序
+        ↓
+根據商品名稱去除重複資料
         ↓
 輸出 frontend/laptop.csv
 ```
-
-PChome API 範例：
-
-```text
-https://ecshweb.pchome.com.tw/search/v3.3/all/results?q=筆電&page=1&sort=sale/dc
-```
-
-目前 `crawler.py` 會抓取第 1 到第 10 頁資料，並整理成 CSV。
 
 ---
 
@@ -102,25 +128,46 @@ https://ecshweb.pchome.com.tw/search/v3.3/all/results?q=筆電&page=1&sort=sale/
 `frontend/laptop.csv` 目前包含以下欄位：
 
 | 欄位 | 說明 |
+|---|---|
 | `name` | 商品完整名稱 |
-| `brand` | 品牌，例如 : ASUS、Acer、Lenovo、HP |
-| `RAM` | 記憶體容量，例如 : 8GB、16GB |
-| `SSD` | 儲存容量，例如 : 512GB、1024GB |
-| `CPU` | 處理器型號，例如 : i5-13420H、R7-8840HS、N150 |
+| `brand` | 品牌，例如 ASUS、Acer、Lenovo、HP |
+| `RAM` | 記憶體容量，例如 8GB、16GB |
+| `SSD` | 儲存容量，例如 512GB、1024GB |
+| `CPU` | 處理器型號，例如 i5-13420H、R7-8840HS、N150、Celeron N4500 |
 | `price` | 商品價格 |
+| `url` | 商品在 PChome 的原始網址，可用於「了解更多」連結 |
+
+CSV 範例：
+
+```csv
+name,brand,RAM,SSD,CPU,price,url
+Vivobook Go 14...,ASUS,4GB,128GB,Celeron N4500,7999,https://24h.pchome.com.tw/prod/...
+```
 
 ---
 
 ## 後端功能
 
-### 1. 筆電資料爬取
-
-使用 `requests` 向 PChome 搜尋 API 取得筆電商品資料。
+### 1. 取得筆電資料
 
 主要檔案：
 
 ```text
 backend/crawler.py
+```
+
+功能：
+
+- 向 PChome 搜尋 API 發送請求
+- 解析 JSON 商品資料
+- 抓取多頁筆電商品
+- 取得商品名稱、價格與商品 ID
+- 由商品 ID 組合商品網址
+
+商品網址產生方式：
+
+```python
+product_url = "https://24h.pchome.com.tw/prod/" + product_id
 ```
 
 直接執行：
@@ -131,7 +178,61 @@ python backend/crawler.py
 
 ---
 
-### 2. 自動更新 CSV
+### 2. 品牌辨識
+
+品牌判斷規則集中放在：
+
+```text
+backend/brand_map.py
+```
+
+例如：
+
+```python
+r"Vivobook": "ASUS"
+r"Aspire": "Acer"
+r"IdeaPad": "Lenovo"
+r"Surface": "Microsoft"
+```
+
+若商品名稱中沒有明顯系列名稱，則使用 `model_map` 透過型號規則進行補充判斷。
+
+---
+
+### 3. 規格擷取
+
+目前利用 Regular Expression 從商品名稱中擷取：
+
+- CPU：支援 Intel i 系列、Intel Ultra、Intel Core、Ryzen、Celeron、Intel N 系列
+- RAM：擷取 4GB、8GB、16GB、8GB+8GB 等格式
+- SSD：擷取 128GB、256GB、512GB、1TB 等格式，並將 TB 轉換為 GB
+
+---
+
+### 4. 去除重複資料
+
+為避免推薦結果出現同一商品重複顯示，資料輸出前會進行去重複處理。
+
+處理方式：
+
+1. 先依照價格由低到高排序
+2. 再根據商品名稱 `name` 去除重複
+3. 保留價格較低的商品資料
+4. 檢查清理後是否仍有重複資料
+
+執行時會在終端機顯示類似：
+
+```text
+原始筆數: 200
+找到重複: 57
+去重後: 165
+剩餘重複: 0
+CSV完成
+```
+
+---
+
+### 5. 更新 CSV
 
 `update_data.py` 會呼叫 `crawler.py` 中的 `run_crawler()`，重新抓取資料並更新：
 
@@ -167,60 +268,39 @@ CSV完成
 
 ---
 
-### 3. 品牌辨識
-
-品牌判斷規則集中放在：
-
-```text
-backend/brand_map.py
-```
-
-例如：
-
-```python
-r"Vivobook": "ASUS"
-r"Aspire": "Acer"
-r"IdeaPad": "Lenovo"
-r"Surface": "Microsoft"
-```
-
-若商品名稱中沒有明顯系列名稱，則使用 `model_map` 透過型號規則進行補充判斷。
-
----
-
-### 4. 規格擷取
-
-目前利用 Regular Expression 從商品名稱中擷取：
-
-- CPU：支援 Intel i 系列、Intel Ultra、Intel Core、Ryzen、Celeron、Intel N 系列
-- RAM：擷取 4GB、8GB、16GB、8GB+8GB 等格式
-- SSD：擷取 128GB、256GB、512GB、1TB 等格式，並將 TB 轉換為 GB
-
----
-
-### 5. 去除重複資料
-
-為避免推薦結果出現同一商品重複顯示，資料輸出前會進行去重複處理。
-
-處理方式：
-
-1. 先依照價格由低到高排序
-2. 再根據商品名稱 `name` 去除重複
-3. 保留價格較低的商品資料
-4. 檢查清理後是否仍有重複資料
-
----
-
 ## 前端功能
 
-目前網站包含：
+目前網站功能包含：
 
 - 首頁 `/`
 - 關於頁 `/about`
 - 聯絡頁 `/contact`
-- 筆電資料展示區
-- 預算篩選表單
-- 使用情境篩選表單
+- 讀取 `frontend/laptop.csv`
+- 顯示筆電卡片
+- 預算篩選
+- 使用情境篩選
+- 推薦分數排序
+- 價格排序
+- 顯示推薦理由
+- 顯示商品原始連結
+
+使用情境分類包含：
+
+```text
+日常/學習
+商務
+創作/專業
+影音/娛樂
+```
+
+排序方式包含：
+
+```text
+推薦評分由高到低
+推薦評分由低到高
+價格由低到高
+價格由高到低
+```
 
 主要檔案：
 
@@ -302,9 +382,9 @@ frontend/laptop.csv
 分支規劃：
 
 ```text
-main            # 穩定版本
-tingyu          # 爬蟲、資料整理、匯出CVS、更新資料
-Elva            # 
+main      # 穩定版本
+tingyu    # 後端爬蟲、資料整理、CSV 匯出、更新資料
+Elva      # 前端網站、頁面設計、推薦顯示
 ```
 
 
@@ -318,19 +398,28 @@ Elva            #
 - Flask 網站基本架構
 - Vercel 部署
 - PChome API 資料取得
+- 多頁商品資料抓取
 - 品牌判斷
 - CPU / RAM / SSD 擷取
+- 商品網址欄位 `url`
 - 重複資料清理
 - 自動更新 CSV 程式
-- 基礎 README 文件
+- 預算篩選
+- 用途分類
+- 推薦分數與推薦理由說明
+- 排序功能
+- README 文件
 
-後續可加強：(AI推薦)
+後續可加強：
 
 - 增加更多資料來源
-- 改善推薦演算法
-- 加入使用者回饋紀錄
+- 改善品牌與 CPU 辨識規則
+- 加入更完整的使用者回饋紀錄
+- 後端雲端化
 - 增加圖表分析
-- 強化前端篩選與排序功能
+- 強化商品連結與前端顯示細節
+- 增加更多測試資料與錯誤處理
+
 
 ---
 
@@ -351,6 +440,7 @@ python backend/update_data.py
 
 並確認 `frontend/laptop.csv` 是否正確更新。
 
+
 ---
 
 ## 專題網址
@@ -358,52 +448,3 @@ python backend/update_data.py
 https://project-1142.vercel.app/
 
 ---
-
-## commit紀錄(更新時間:5/26)
-main:
-da13bce (HEAD -> main, origin/main, origin/HEAD) Merge pull request #2 from s1140939/tingyu  A part finish
-3b97ec3 (origin/tingyu, tingyu) A part完成、README.md更新完畢
-41cb185 新增更新機制
-d730f34 資料去重複
-9e2acee 增加資料量、修改CPU與品牌部分的小bug
-7e9cf32 品牌分析功能完善
-81727d3 Merge pull request #1 from s1140939/tingyu
-986b935 brand map建立、crawler.py完善
-e11c860 CPU提取完成
-915d7e1 crawler.py修正中，卡在CPU，其餘過關
-3732247 資料取得流程完成
-e9a2ef1 5/24 確定使用api路徑
-bbc6427 5/24 fix
-0fc5f0d fix
-a2b3c2b 網站測試
-30e1547 (origin/Elva) 建立網站
-e537035 try
-3fd6cab initalize project structure
-91df4a5 Merge branch 'main' of https://github.com/s1140939/project-1142 :wq# Please enter a commit message to explain why this merge is necessary,
-87b0336 Initial commit
-43b4baa open project
-
-tingyu:
-3b97ec3 (HEAD -> tingyu, origin/tingyu) A part完成、README.md更新完畢
-41cb185 新增更新機制
-d730f34 資料去重複
-9e2acee 增加資料量、修改CPU與品牌部分的小bug
-7e9cf32 品牌分析功能完善
-986b935 brand map建立、crawler.py完善
-e11c860 CPU提取完成
-915d7e1 crawler.py修正中，卡在CPU，其餘過關
-e11c860 CPU提取完成
-915d7e1 crawler.py修正中，卡在CPU，其餘過關
-3732247 資料取得流程完成
-e9a2ef1 5/24 確定使用api路徑
-bbc6427 5/24 fix
-0fc5f0d fix
-a2b3c2b 網站測試
-30e1547 (origin/Elva) 建立網站
-e537035 try
-3fd6cab initalize project structure
-91df4a5 Merge branch 'main' of https://github.com/s1140939/project-1142 :wq# Please enter a commit message to explain why this merge is necessary,
-87b0336 Initial commit
-43b4baa open project
-
-Elva:
