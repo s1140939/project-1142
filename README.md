@@ -1,35 +1,90 @@
 # 筆電推薦系統 Project 1142
-本專案為大一 Python 程式設計期末專題，目標是建立一個可以依照筆電資料進行推薦與展示的網站。  
-目前專案包含兩個主要部分：
 
-1. `backend/`：負責取得筆電資料、清理規格、產生 `laptop.csv`
-2. `frontend/`：負責 Flask 網頁顯示、讀取 CSV 資料並提供使用者操作介面
+本專案為大一 Python 程式設計期末專題，主題是「筆電推薦系統」。系統會自動取得電商平台上的筆電資料，將商品名稱中的規格資訊整理成可分析的資料，並透過網站與 API 提供查詢、篩選與推薦功能。
 
-已部署網址：  
-https://project-1142.vercel.app/
+目前專案已完成兩條資料流程：
+
+1. **CSV 流程**：爬蟲取得資料後輸出 `frontend/laptop.csv`，前端 Flask 網站讀取 CSV 顯示商品卡片。
+2. **資料庫 / API 流程**：FastAPI 後端可觸發爬蟲，將資料清理後寫入 Neon PostgreSQL，並透過 API 提供資料查詢與推薦結果。
+
+---
+
+## 已部署網址
+
+| 類型 | 平台 | 網址 |
+|---|---|---|
+| 前端網站 | Vercel | https://project-1142.vercel.app/ |
+| 後端 API | Render | https://project-1142-backend.onrender.com |
+| API 文件 | Render Swagger | https://project-1142-backend.onrender.com/docs |
 
 ---
 
 ## 專案目標
 
-使用者在選購筆電時，常需要同時比較品牌、CPU、RAM、SSD、價格與使用情境。本專案希望透過 Python 自動整理電商資料，將非結構化的商品名稱轉換成可分析的資料表，並在網頁中提供篩選、排序與推薦結果。
+使用者在選購筆電時，常需要比較品牌、CPU、RAM、SSD、價格與使用情境。本專案希望透過 Python 自動化整理電商資料，將原本混在商品名稱中的規格轉換成結構化資料，再依照用途與預算提供推薦結果。
 
-目前資料來源以 PChome 搜尋 API 為主，後端會自動取得商品資料，並從商品名稱中擷取：
+本專案目前可整理的欄位包含：
 
+- 商品名稱
 - 品牌
 - CPU
 - RAM
 - SSD
 - 價格
 - 商品原始網址
+- 商品唯一識別碼 `product_id`
 
-整理後輸出為：
+---
+
+## 系統架構
+
+### 目前整體架構
 
 ```text
-frontend/laptop.csv
+PChome 搜尋 API
+        ↓
+backend/crawler.py
+        ↓
+資料清理：品牌 / CPU / RAM / SSD / 價格 / URL
+        ↓
+        ├── CSV 流程：frontend/laptop.csv → Flask 前端 → Vercel
+        │
+        └── 資料庫流程：update_database.py → Neon PostgreSQL → FastAPI → Render
 ```
 
-前端網站會讀取此 CSV，依照預算、用途與推薦分數顯示筆電卡片。
+### CSV 流程
+
+```text
+PChome API
+    ↓
+crawler.py
+    ↓
+update_data.py
+    ↓
+frontend/laptop.csv
+    ↓
+frontend/app.py
+    ↓
+Vercel 前端網站
+```
+
+### 後端 API / 資料庫流程
+
+```text
+POST /api/update
+    ↓
+FastAPI main.py
+    ↓
+update_database.py
+    ↓
+crawler.py 重新抓取 PChome 資料
+    ↓
+清理與去重複
+    ↓
+Neon PostgreSQL laptops 資料表
+    ↓
+/api/laptops、/api/recommend 提供查詢與推薦
+```
 
 ---
 
@@ -38,46 +93,56 @@ frontend/laptop.csv
 ```text
 project-1142/
 ├── backend/
-│   ├── crawler.py          # 主要爬蟲與資料清理程式
-│   ├── update_data.py      # 自動更新 CSV 的執行入口
-│   └── brand_map.py        # 品牌與型號對應規則
+│   ├── main.py              # FastAPI 後端入口，提供 API endpoints
+│   ├── crawler.py           # 爬蟲與資料清理主程式
+│   ├── update_data.py       # 更新 frontend/laptop.csv
+│   ├── update_database.py   # FastAPI 觸發爬蟲後更新 PostgreSQL
+│   ├── database.py          # PostgreSQL / Neon 資料庫連線
+│   ├── models.py            # SQLAlchemy Laptop 資料表模型
+│   ├── init_db.py           # 建立資料表
+│   ├── import_csv_to_db.py  # 將既有 CSV 匯入資料庫
+│   └── brand_map.py         # 品牌與型號判斷規則
 │
 ├── frontend/
-│   ├── app.py              # Flask 網站主程式
-│   ├── laptop.csv          # 清理後的筆電資料
-│   ├── requirements.txt    # Python 套件需求
+│   ├── app.py               # Flask 前端網站主程式
+│   ├── laptop.csv           # 清理後的筆電資料
+│   ├── requirements.txt     # 前端 Flask 所需套件
 │   ├── static/
-│   │   └── style.css       # 網頁樣式
+│   │   └── style.css        # 網站樣式
 │   └── templates/
-│       ├── base.html       # 共用版型
-│       ├── index.html      # 首頁與推薦展示頁
-│       ├── about.html      # 關於頁面
-│       └── contact.html    # 聯絡頁面
+│       ├── base.html
+│       ├── index.html
+│       ├── about.html
+│       └── contact.html
 │
-├── feedback.csv            # 使用者回饋資料
-└── README.md               # 專案說明文件
+├── feedback.csv             # 使用者回饋資料
+├── requirements.txt         # Python 套件需求
+├── .gitignore               # 忽略 .env、__pycache__ 等檔案
+└── README.md
 ```
 
 ---
 
 ## 使用技術
 
-- Python
-- Flask
-- requests
-- pandas
-- Regular Expression
-- CSV
-- HTML / CSS
-- Vercel
-- GitHub
+| 類別 | 技術 |
+|---|---|
+| 程式語言 | Python |
+| 前端網站 | Flask、HTML、CSS |
+| 後端 API | FastAPI、Uvicorn |
+| 資料庫 | PostgreSQL、Neon |
+| ORM | SQLAlchemy |
+| 資料處理 | pandas、Regular Expression |
+| 資料來源 | PChome 搜尋 API |
+| 部署 | Vercel、Render |
+| 協作 | GitHub、branch、commit、pull request |
+| AI 輔助 | 程式除錯、regex 調整、README 整理、部署問題排查 |
 
 ---
 
-## 取得資料
+## 資料來源
 
-本專案目前使用 PChome 搜尋 API 取得商品資料，而不是直接解析前端 HTML。  
-使用 API 的原因是 PChome 商品資料多由 JavaScript 動態載入，直接用 BeautifulSoup 解析 HTML 時不容易取得完整商品資訊。
+本專案使用 PChome 搜尋 API 取得筆電商品資料，而不是直接解析 PChome 前端 HTML。原因是 PChome 商品資料多由 JavaScript 動態載入，直接用 BeautifulSoup 解析 HTML 時不容易取得完整商品資料。
 
 API 範例：
 
@@ -93,94 +158,37 @@ https://ecshweb.pchome.com.tw/search/v3.3/all/results?q=筆電&page=1&sort=sale/
 | `page=1` | 搜尋結果第 1 頁 |
 | `sort=sale/dc` | 依銷售相關排序 |
 
-目前 `crawler.py` 會抓取第 1 到第 10 頁資料。
+目前 `crawler.py` 會抓取第 1 到第 10 頁資料，因此原始資料量約為 200 筆，再經過去重複與清理後輸出可使用的筆電資料。
 
 ---
 
-## 後端資料處理流程
+## 資料清理流程
+
+`backend/crawler.py` 主要負責資料取得與清理，流程如下：
 
 ```text
-PChome 搜尋 API
+requests 取得 JSON
         ↓
-requests 取得 JSON 資料
+讀取商品名稱與價格
         ↓
-讀取商品名稱、價格、商品 ID
-        ↓
-組合商品原始網址
+取得商品 ID 並組合商品網址
         ↓
 利用 brand_map.py 判斷品牌
         ↓
-利用正規表示式擷取 CPU / RAM / SSD
+利用 regex 擷取 CPU / RAM / SSD
         ↓
 pandas 建立 DataFrame
         ↓
 依價格排序
         ↓
-根據商品名稱去除重複資料
+根據商品名稱去重複
         ↓
-輸出 frontend/laptop.csv
+輸出 CSV 或回傳 DataFrame 給資料庫更新流程
 ```
 
----
+### 品牌辨識
 
-## CSV 欄位說明
-
-`frontend/laptop.csv` 目前包含以下欄位：
-
-| 欄位 | 說明 |
-|---|---|
-| `name` | 商品完整名稱 |
-| `brand` | 品牌，例如 ASUS、Acer、Lenovo、HP |
-| `RAM` | 記憶體容量，例如 8GB、16GB |
-| `SSD` | 儲存容量，例如 512GB、1024GB |
-| `CPU` | 處理器型號，例如 i5-13420H、R7-8840HS、N150、Celeron N4500 |
-| `price` | 商品價格 |
-| `url` | 商品在 PChome 的原始網址，可用於「了解更多」連結 |
-
-CSV 範例：
-
-```csv
-name,brand,RAM,SSD,CPU,price,url
-Vivobook Go 14...,ASUS,4GB,128GB,Celeron N4500,7999,https://24h.pchome.com.tw/prod/...
-```
-
----
-
-## 後端功能
-
-### 1. 取得筆電資料
-
-主要檔案：
-
-```text
-backend/crawler.py
-```
-
-功能：
-
-- 向 PChome 搜尋 API 發送請求
-- 解析 JSON 商品資料
-- 抓取多頁筆電商品
-- 取得商品名稱、價格與商品 ID
-- 由商品 ID 組合商品網址
-
-商品網址產生方式：
-
-```python
-product_url = "https://24h.pchome.com.tw/prod/" + product_id
-```
-
-直接執行：
-
-```bash
-python backend/crawler.py
-```
-
----
-
-### 2. 品牌辨識
-
-品牌判斷規則集中放在：
+品牌判斷規則集中在：
 
 ```text
 backend/brand_map.py
@@ -195,256 +203,421 @@ r"IdeaPad": "Lenovo"
 r"Surface": "Microsoft"
 ```
 
-若商品名稱中沒有明顯系列名稱，則使用 `model_map` 透過型號規則進行補充判斷。
+若商品名稱中沒有明顯品牌或系列名稱，則會再透過 `model_map` 以型號規則補充判斷。
 
----
+### CPU 擷取
 
-### 3. 規格擷取
+目前支援常見格式，例如：
 
-目前利用 Regular Expression 從商品名稱中擷取：
+- Intel i3 / i5 / i7 / i9
+- Intel Core 3 / Core 5 / Core 7
+- Intel Ultra 5 / Ultra 7
+- Ryzen 3 / Ryzen 5 / Ryzen 7
+- R5、R7 等簡寫
+- Celeron
+- Intel N 系列
 
-- CPU：支援 Intel i 系列、Intel Ultra、Intel Core、Ryzen、Celeron、Intel N 系列
-- RAM：擷取 4GB、8GB、16GB、8GB+8GB 等格式
-- SSD：擷取 128GB、256GB、512GB、1TB 等格式，並將 TB 轉換為 GB
+### RAM 擷取
 
----
-
-### 4. 去除重複資料
-
-為避免推薦結果出現同一商品重複顯示，資料輸出前會進行去重複處理。
-
-處理方式：
-
-1. 先依照價格由低到高排序
-2. 再根據商品名稱 `name` 去除重複
-3. 保留價格較低的商品資料
-4. 檢查清理後是否仍有重複資料
-
-執行時會在終端機顯示類似：
+可處理：
 
 ```text
-原始筆數: 200
-找到重複: 57
-去重後: 165
-剩餘重複: 0
-CSV完成
+8G
+8GB
+16G
+8GB+8GB
+```
+
+並避免將 SSD 容量誤判為 RAM。
+
+### SSD 擷取
+
+可處理：
+
+```text
+128GB
+256GB
+512GB
+1TB
+```
+
+其中 TB 會轉換為 GB，例如：
+
+```text
+1TB → 1024GB
 ```
 
 ---
 
-### 5. 更新 CSV
+## CSV 欄位說明
 
-`update_data.py` 會呼叫 `crawler.py` 中的 `run_crawler()`，重新抓取資料並更新：
+`frontend/laptop.csv` 目前包含以下欄位：
+
+| 欄位 | 說明 |
+|---|---|
+| `name` | 商品完整名稱 |
+| `brand` | 品牌，例如 ASUS、Acer、Lenovo、HP |
+| `RAM` | 記憶體容量，例如 8GB、16GB |
+| `SSD` | 儲存容量，例如 512GB、1024GB |
+| `CPU` | 處理器型號，例如 i5-13420H、R7-8840HS、N150 |
+| `price` | 商品價格 |
+| `url` | 商品在 PChome 的原始網址 |
+
+CSV 範例：
+
+```csv
+name,brand,RAM,SSD,CPU,price,url
+Vivobook Go 14...,ASUS,4GB,128GB,Celeron N4500,7999,https://24h.pchome.com.tw/prod/...
+```
+
+---
+
+## PostgreSQL 資料庫設計
+
+資料庫使用 Neon PostgreSQL。資料表模型定義在：
+
+```text
+backend/models.py
+```
+
+主要資料表：
+
+```text
+laptops
+```
+
+欄位：
+
+| 欄位 | 說明 |
+|---|---|
+| `id` | 資料庫流水號 |
+| `product_id` | 商品唯一識別碼，設為 unique |
+| `name` | 商品名稱 |
+| `brand` | 品牌 |
+| `cpu` | CPU |
+| `ram` | RAM |
+| `ssd` | SSD |
+| `price` | 價格 |
+| `url` | 商品原始網址 |
+| `updated_at` | 資料更新時間 |
+
+`product_id` 的產生方式：
+
+1. 優先使用資料中的 `product_id` / `Id`
+2. 若沒有，則從商品網址中的 `/prod/` 後方擷取
+3. 若網址仍無法取得，則使用 `name + price` 產生 fallback hash
+4. 寫入資料庫前會移除空白 `product_id` 並依 `product_id` 去重複
+
+此設計是為了解決 PostgreSQL unique constraint 錯誤，避免多筆空白 `product_id` 寫入造成重複鍵衝突。
+
+---
+
+## FastAPI 後端功能
+
+後端入口：
+
+```text
+backend/main.py
+```
+
+目前 API endpoints：
+
+| Method | Endpoint | 功能 |
+|---|---|---|
+| GET | `/` | 確認 API 是否啟動 |
+| GET | `/api/health` | 檢查資料庫連線與目前筆電資料筆數 |
+| GET | `/api/laptops` | 從 PostgreSQL 取得筆電資料，可依品牌、價格、RAM 篩選 |
+| GET | `/api/recommend` | 依用途、預算、品牌與數量限制回傳推薦結果 |
+| POST | `/api/update` | 觸發爬蟲，重新抓取資料並更新 PostgreSQL |
+
+### `/api/laptops` 查詢參數
+
+| 參數 | 說明 | 範例 |
+|---|---|---|
+| `brand` | 品牌篩選 | `ASUS` |
+| `max_price` | 價格上限 | `30000` |
+| `min_ram` | RAM 下限 | `16` |
+
+範例：
+
+```text
+/api/laptops?brand=ASUS&max_price=30000&min_ram=16
+```
+
+### `/api/recommend` 查詢參數
+
+| 參數 | 說明 | 預設值 |
+|---|---|---|
+| `usage` | 使用情境，例如文書、程式、遊戲 | 文書 |
+| `max_price` | 預算上限 | 30000 |
+| `brand` | 品牌篩選，可不填 | None |
+| `limit` | 回傳數量 | 10 |
+
+範例：
+
+```text
+/api/recommend?usage=程式&max_price=30000&limit=5
+```
+
+### `/api/update` 更新流程
+
+```text
+POST /api/update
+        ↓
+update_database_from_crawler(db)
+        ↓
+crawl_laptops(save_csv=False)
+        ↓
+整理 product_id
+        ↓
+移除空白 ID
+        ↓
+依 product_id 去重複
+        ↓
+清空舊資料
+        ↓
+寫入新資料
+        ↓
+回傳更新筆數
+```
+
+成功回傳範例：
+
+```json
+{
+  "status": "success",
+  "message": "資料庫更新完成",
+  "count": 165
+}
+```
+
+---
+
+## 前端網站功能
+
+前端入口：
+
+```text
+frontend/app.py
+```
+
+目前前端仍以 `frontend/laptop.csv` 為主要資料來源，提供以下功能：
+
+- 顯示筆電商品卡片
+- 依用途分類：日常 / 學習、商務、創作 / 專業、影音 / 娛樂
+- 輸入預算進行篩選
+- 依推薦分數或價格排序
+- 顯示推薦原因
+- 點擊「了解更多」前往商品原始網址
+
+目前後端 API 已部署完成，下一步可將前端資料來源由 CSV 改為 Render FastAPI：
+
+```text
+frontend/app.py
+    ↓
+requests.get("<Render 後端網址>/api/laptops")
+    ↓
+顯示 API 回傳資料
+```
+
+---
+
+## 本機執行方式
+
+### 1. 建立環境變數
+
+在專案根目錄或 `backend/` 建立 `.env`：
+
+```env
+DATABASE_URL=postgresql://使用者:密碼@主機/laptop_db?sslmode=require
+```
+
+`.env` 內含資料庫帳密，不應上傳 GitHub。
+
+---
+
+### 2. 初始化資料庫
+
+```bash
+cd backend
+python init_db.py
+```
+
+---
+
+### 3. 更新 CSV
+
+```bash
+python update_data.py
+```
+
+此指令會重新爬取資料並更新：
 
 ```text
 frontend/laptop.csv
 ```
 
-執行方式：
+---
+
+### 4. 匯入既有 CSV 到資料庫
 
 ```bash
-python backend/update_data.py
-```
-
-執行成功時，終端機會顯示類似：
-
-```text
-開始更新資料
-開始抓資料
-                                                name brand   RAM    SSD            CPU  price
-0  Aspire Lite 16吋Ultra 5 AI 輕薄長效筆電  (Ultra 5 115...  Acer  16GB  512GB   Ultra 5 115U  19900
-1  Aspire Lite 17.3吋文書筆電 銀色(C3-N355/8G/512G/W11/A...  Acer   8GB  512GB           N355  17900
-2  Aspire Lite 15.6吋文書筆電 灰色(C3-N355/8G/512G/W11/F...  Acer   8GB  512GB           N355  13900
-3  Aspire Lite 14吋 文書效能筆電銀(N150/4G/128G/WIN11home...  Acer   4GB  128GB           N150   8999
-4  Aspire Lite 15.6吋文書筆電 銀(Celeron N4500/4G/128G/...  Acer   4GB  128GB  Celeron N4500   7999
-原始筆數: 200
-找到重複: 58
-去重後: 164
-剩餘重複: 0
-CSV完成
-更新時間: 2026-05-26 12:36:23.476575
-更新完成
+python import_csv_to_db.py
 ```
 
 ---
 
-## 前端功能
-
-目前網站功能包含：
-
-- 首頁 `/`
-- 關於頁 `/about`
-- 聯絡頁 `/contact`
-- 讀取 `frontend/laptop.csv`
-- 顯示筆電卡片
-- 預算篩選
-- 使用情境篩選
-- 推薦分數排序
-- 價格排序
-- 顯示推薦理由
-- 顯示商品原始連結
-
-使用情境分類包含：
-
-```text
-日常/學習
-商務
-創作/專業
-影音/娛樂
-```
-
-排序方式包含：
-
-```text
-推薦評分由高到低
-推薦評分由低到高
-價格由低到高
-價格由高到低
-```
-
-主要檔案：
-
-```text
-frontend/app.py
-frontend/templates/
-frontend/static/style.css
-```
-
----
-
-## 安裝與執行方式
-
-### 1. 下載專案
+### 5. 啟動 FastAPI 後端
 
 ```bash
-git clone <https://github.com/s1140939/project-1142.git>
-cd project-1142
+cd backend
+uvicorn main:app --reload
+```
+
+開啟：
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+可在 Swagger 中測試：
+
+```text
+GET /api/health
+GET /api/laptops
+GET /api/recommend
+POST /api/update
 ```
 
 ---
 
-### 2. 安裝套件
+### 6. 啟動 Flask 前端
 
 ```bash
-pip install -r frontend/requirements.txt
+cd frontend
+python app.py
 ```
 
 ---
 
-### 3. 更新筆電資料
+## Render 後端部署設定
+
+本專案後端已部署至 Render，部署設定如下：
+
+| 設定項目 | 值 |
+|---|---|
+| Service Type | Web Service |
+| Runtime | Python |
+| Root Directory | `backend` |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
+| Environment Variable | `DATABASE_URL` |
+| Database | Neon PostgreSQL |
+
+若 `requirements.txt` 放在專案根目錄而不是 `backend/`，Render 的 Build Command 需依實際路徑調整，例如：
 
 ```bash
-python backend/update_data.py
+pip install -r ../requirements.txt
+```
+
+部署完成後可測試：
+
+```text
+<Render 後端網址>/
+<Render 後端網址>/api/health
+<Render 後端網址>/api/laptops
+<Render 後端網址>/docs
 ```
 
 ---
 
-### 4. 啟動網站
+## Vercel 前端部署
 
-```bash
-python frontend/app.py
-```
-
-啟動後在瀏覽器開啟：
+前端已部署於 Vercel：
 
 ```text
-http://127.0.0.1:5000
+https://project-1142.vercel.app/
+```
+
+目前 Vercel 前端主要讀取 CSV 資料。若後續改為讀取 Render API，需將前端中的資料讀取邏輯改為呼叫：
+
+```text
+<Render 後端網址>/api/laptops
+```
+
+或：
+
+```text
+<Render 後端網址>/api/recommend
 ```
 
 ---
 
-## 部署方式
+## GitHub 協作與版本紀錄
 
-本專案使用 Vercel 部署前端網站。
-
-建議 Vercel 設定：
-
-```text
-Root Directory: frontend
-```
-
-部署時 Vercel 主要會讀取：
-
-```text
-frontend/app.py
-frontend/requirements.txt
-frontend/templates/
-frontend/static/
-frontend/laptop.csv
-```
-
-後端爬蟲不直接在 Vercel 上執行，而是在本地端更新 `laptop.csv` 後，將更新後的 CSV 推送到 GitHub，再由 Vercel 重新部署。
+本專案使用 GitHub 管理版本，開發過程包含多次 commit，紀錄了從爬蟲測試、API 路徑確認、品牌判斷、CPU 擷取、資料去重複、CSV 更新機制，到 FastAPI / PostgreSQL / Render 部署的完整開發歷程。
 
 ---
 
-## GitHub 協作規劃
 
-分支規劃：
-
-```text
-main      # 穩定版本
-tingyu    # 後端爬蟲、資料整理、CSV 匯出、更新資料
-Elva      # 前端網站、頁面設計、推薦顯示
-```
-
-
-
----
-
-## 目前進度
+## 目前完成進度
 
 已完成：
 
-- Flask 網站基本架構
-- Vercel 部署
-- PChome API 資料取得
-- 多頁商品資料抓取
-- 品牌判斷
-- CPU / RAM / SSD 擷取
-- 商品網址欄位 `url`
-- 重複資料清理
-- 自動更新 CSV 程式
-- 預算篩選
-- 用途分類
-- 推薦分數與推薦理由說明
-- 排序功能
-- README 文件
+- PChome 搜尋 API 資料取得
+- 筆電商品名稱、價格、網址擷取
+- 品牌、CPU、RAM、SSD 規格整理
+- CSV 輸出與更新機制
+- Flask 前端網站
+- Vercel 前端部署
+- Neon PostgreSQL 資料庫
+- SQLAlchemy 資料表模型
+- CSV 匯入資料庫
+- FastAPI 後端 API
+- `POST /api/update` 觸發爬蟲更新資料庫
+- Render 後端部署
 
-後續可加強：
+後續可改進：
 
-- 增加更多資料來源
-- 改善品牌與 CPU 辨識規則
-- 加入更完整的使用者回饋紀錄
-- 後端雲端化
-- 增加圖表分析
-- 強化商品連結與前端顯示細節
-- 增加更多測試資料與錯誤處理
-
+- 將前端由讀取 CSV 改為直接讀取 Render FastAPI
+- 將 CORS `allow_origins=["*"]` 改為只允許正式前端網址
+- 增加定期自動更新資料庫機制
+- 增加更多資料來源或商品平台
+- 改善推薦演算法，例如加入 GPU、重量、螢幕尺寸與使用者偏好權重
+- 增加使用者回饋資料分析
 
 ---
 
 ## 注意事項
 
-- `__pycache__/` 與 `.pyc` 檔案為 Python 自動產生的暫存檔。
-- 若有使用 `.gitignore`，建議加入：
-
-```gitignore
-__pycache__/
-*.pyc
-```
-- 若修改爬蟲規則，請重新執行：
+1. `.env` 內含資料庫連線字串，不可上傳 GitHub。
+2. 若 `.env` 曾經被 Git 追蹤，需執行：
 
 ```bash
-python backend/update_data.py
+git rm --cached .env
+git commit -m "Remove env file from git tracking"
 ```
 
-並確認 `frontend/laptop.csv` 是否正確更新。
+3. `__pycache__/` 與 `*.pyc` 不應上傳 GitHub。
+4. Render Free 服務在一段時間沒有流量後可能休眠，因此第一次開啟 API 可能需要等待較久。
+5. `/api/update` 會重新爬資料並寫入資料庫，執行時間會比一般查詢 API 更久。
 
+---
+
+## Demo 建議流程
+
+1. 開啟前端網站：`https://project-1142.vercel.app/`
+2. 展示使用者可依用途、預算、排序查看推薦商品
+3. 開啟後端 API：`<Render 後端網址>/docs`
+4. 執行 `GET /api/health`，確認資料庫連線與資料筆數
+5. 執行 `GET /api/laptops`，展示資料庫中的筆電資料
+6. 執行 `GET /api/recommend`，展示後端推薦 API
+7. 執行 `POST /api/update`，展示可由 API 觸發爬蟲更新資料庫
 
 ---
 
-## 專題網址
+## 專案總結
 
-https://project-1142.vercel.app/
+本專案從原本單純的 CSV 爬蟲與前端展示，逐步擴充為包含資料庫與 API 的完整系統。透過 PChome API、資料清理、CSV、Flask、FastAPI、Neon PostgreSQL、Render 與 Vercel，完成了從資料取得、規格分析、資料儲存、API 查詢到網站展示的整合流程。
 
----
+目前系統已具備期末專題所需的資料蒐集、資料處理、網頁展示、GitHub 協作、前端部署與後端部署成果，也保留後續將前端完全串接 FastAPI 的延伸空間。
