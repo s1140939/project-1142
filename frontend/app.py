@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request
 import csv
 import os
+import requests
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 DATA_PATH = os.path.join(os.path.dirname(__file__), 'laptop.csv')
+API_URL = "http://127.0.0.1:8000/api/laptops"
 
 """
 篩選分類(全部用途、日常學習、商務、創作專業、影音娛樂)
@@ -186,7 +188,20 @@ def get_recommend_score(row):
 
     return min(score, 100), reasons[:3]
 
-def load_laptops():
+def load_laptops_from_api():
+    response = requests.get(API_URL, timeout=5)
+    response.raise_for_status()
+    data = response.json()
+    laptops = data.get("data", [])
+
+    for row in laptops:
+        row['price'] = int(row.get('price', '0') or '0')
+        row['UseCase'] = classify_use_case(row)
+        row['Score'], row['Reason'] = get_recommend_score(row)
+
+    return laptops
+
+def load_laptops_from_csv():
     laptops = []
     if not os.path.exists(DATA_PATH):
         return laptops
@@ -198,19 +213,43 @@ def load_laptops():
             row['UseCase'] = classify_use_case(row)
             row['Score'], row['Reason'] = get_recommend_score(row)
             laptops.append(row)
+
     return laptops
 
+def load_laptops():
+    try:
+        return load_laptops_from_api()
+    except Exception as e:
+        print("API 讀取失敗，改用 CSV：", e)
+        return load_laptops_from_csv()
 
-def filter_laptops(laptops, use_case, budget):
+
+def filter_laptops(laptops, use_case, budget, ram_filter, ssd_filter, cpu_filter, brand_filter):
     filtered = laptops
     if use_case and use_case != '全部用途':
         filtered = [item for item in filtered if item.get('UseCase') == use_case]
+
     if budget:
         try:
             max_price = int(budget)
             filtered = [item for item in filtered if item.get('price', 0) <= max_price]
         except ValueError:
             pass
+
+    if ram_filter:
+        filtered = [item for item in filtered if item.get('RAM') == ram_filter]
+
+    if ssd_filter:
+        filtered = [item for item in filtered if item.get('SSD') == ssd_filter]
+
+    if brand_filter:
+        filtered = [item for item in filtered if item.get('brand') == brand_filter]
+
+    if cpu_filter:
+        filtered = [
+            item for item in filtered
+            if cpu_filter.lower() in item.get('CPU', '').lower()
+        ]
     return filtered
 
 
@@ -219,10 +258,14 @@ def home():
     use_case = request.args.get('use_case', '').strip()
     budget = request.args.get('budget', '').strip()
     sort_by = request.args.get('sort', 'score_desc')
+    ram_filter = request.args.get('ram', '').strip()
+    ssd_filter = request.args.get('ssd', '').strip()
+    cpu_filter = request.args.get('cpu', '').strip()
+    brand_filter = request.args.get('brand', '').strip()
 
     laptops = load_laptops()
 
-    filtered = filter_laptops(laptops, use_case, budget)
+    filtered = filter_laptops(laptops,use_case,budget,ram_filter,ssd_filter,cpu_filter,brand_filter)
 
     if sort_by == 'score_desc':
         filtered = sorted(filtered,key=lambda x: x.get('Score', 0),reverse=True)
@@ -243,6 +286,10 @@ def home():
         selected_use_case=use_case,
         budget=budget,
         selected_sort=sort_by,
+        selected_ram=ram_filter,
+        selected_ssd=ssd_filter,
+        selected_cpu=cpu_filter,
+        selected_brand=brand_filter,
     )
 
 @app.route('/about')

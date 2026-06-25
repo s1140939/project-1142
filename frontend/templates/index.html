@@ -57,6 +57,60 @@
     </option>
   </select>
 </label>
+
+<details class="advanced-filter" {% if selected_ram or selected_ssd or selected_cpu or selected_brand %}open{% endif %}>
+  <summary>進階篩選</summary>
+
+  <label>
+    RAM
+    <select name="ram">
+      <option value="">全部 RAM</option>
+      <option value="4GB" {% if selected_ram == '4GB' %}selected{% endif %}>4GB</option>
+      <option value="8GB" {% if selected_ram == '8GB' %}selected{% endif %}>8GB</option>
+      <option value="16GB" {% if selected_ram == '16GB' %}selected{% endif %}>16GB</option>
+      <option value="32GB" {% if selected_ram == '32GB' %}selected{% endif %}>32GB</option>
+    </select>
+  </label>
+
+  <label>
+    SSD
+    <select name="ssd">
+      <option value="">全部 SSD</option>
+      <option value="128GB" {% if selected_ssd == '128GB' %}selected{% endif %}>128GB</option>
+      <option value="256GB" {% if selected_ssd == '256GB' %}selected{% endif %}>256GB</option>
+      <option value="512GB" {% if selected_ssd == '512GB' %}selected{% endif %}>512GB</option>
+      <option value="1024GB" {% if selected_ssd == '1024GB' %}selected{% endif %}>1TB</option>
+    </select>
+  </label>
+
+   <label>
+    CPU
+    <select name="cpu">
+      <option value="">全部 CPU</option>
+      <option value="i3" {% if selected_cpu == 'i3' %}selected{% endif %}>Intel i3</option>
+      <option value="i5" {% if selected_cpu == 'i5' %}selected{% endif %}>Intel i5</option>
+      <option value="i7" {% if selected_cpu == 'i7' %}selected{% endif %}>Intel i7</option>
+      <option value="Ryzen 5" {% if selected_cpu == 'Ryzen 5' %}selected{% endif %}>Ryzen 5</option>
+      <option value="Ryzen 7" {% if selected_cpu == 'Ryzen 7' %}selected{% endif %}>Ryzen 7</option>
+      <option value="Celeron" {% if selected_cpu == 'Celeron' %}selected{% endif %}>Celeron</option>
+    </select>
+  </label>
+
+  <label>
+
+    品牌
+    <select name="brand">
+      <option value="">全部品牌</option>
+      <option value="ASUS" {% if selected_brand == 'ASUS' %}selected{% endif %}>ASUS</option>
+      <option value="Acer" {% if selected_brand == 'Acer' %}selected{% endif %}>Acer</option>
+      <option value="HP" {% if selected_brand == 'HP' %}selected{% endif %}>HP</option>
+      <option value="Lenovo" {% if selected_brand == 'Lenovo' %}selected{% endif %}>Lenovo</option>
+      <option value="Microsoft" {% if selected_brand == 'Microsoft' %}selected{% endif %}>Microsoft</option>
+    </select>
+  </label>
+</details>
+
+
     <button class="button">篩選推薦</button>
   </form>
 

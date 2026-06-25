@@ -263,3 +263,18 @@ textarea {
     margin-left: 0;
   }
 }
+
+.advanced-filter {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  background: #f8faff;
+}
+
+.advanced-filter summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--primary);
+}
