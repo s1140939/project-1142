@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Laptop
 
+from update_database import update_database_from_crawler
+
+
 
 app = FastAPI(
     title="Laptop Recommendation API",
@@ -12,6 +15,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.post("/api/update")
+def update_laptops(db: Session = Depends(get_db)):
+    result = update_database_from_crawler(db)
+
+    return result
 
 # 允許前端呼叫 API
 app.add_middleware(
