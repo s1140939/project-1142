@@ -301,6 +301,28 @@ textarea {
     transform: rotate(90deg);
 }
 
+.filter-group {
+  margin-top: 16px;
+}
+
+.filter-group-title {
+  margin: 0 0 10px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 560px) {
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .analysis-section {
     margin-top: 48px;
 }

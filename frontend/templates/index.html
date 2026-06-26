@@ -61,32 +61,64 @@
   </select>
 </label>
 
-<details class="advanced-filter" {% if selected_ram or selected_ssd or selected_cpu or selected_brand %}open{% endif %}>
+<details class="advanced-filter" {% if selected_ram_min or selected_ram_max or selected_ssd_min or selected_ssd_max or selected_cpu or selected_brand %}open{% endif %}>
   <summary>進階篩選</summary>
 
-  <label>
-    RAM
-    <select name="ram">
-      <option value="">全部 RAM</option>
-      <option value="4GB" {% if selected_ram == '4GB' %}selected{% endif %}>4GB</option>
-      <option value="8GB" {% if selected_ram == '8GB' %}selected{% endif %}>8GB</option>
-      <option value="16GB" {% if selected_ram == '16GB' %}selected{% endif %}>16GB</option>
-      <option value="32GB" {% if selected_ram == '32GB' %}selected{% endif %}>32GB</option>
-    </select>
-  </label>
+  <div class="filter-group">
+  <p class="filter-group-title">記憶體 RAM 範圍</p>
 
-  <label>
-    SSD
-    <select name="ssd">
-      <option value="">全部 SSD</option>
-      <option value="128GB" {% if selected_ssd == '128GB' %}selected{% endif %}>128GB</option>
-      <option value="256GB" {% if selected_ssd == '256GB' %}selected{% endif %}>256GB</option>
-      <option value="512GB" {% if selected_ssd == '512GB' %}selected{% endif %}>512GB</option>
-      <option value="1024GB" {% if selected_ssd == '1024GB' %}selected{% endif %}>1TB</option>
-    </select>
-  </label>
+  <div class="filter-row">
+    <label>
+      最低
+      <select name="ram_min">
+        <option value="">不限制</option>
+        <option value="4GB" {% if selected_ram_min == '4GB' %}selected{% endif %}>4GB</option>
+        <option value="8GB" {% if selected_ram_min == '8GB' %}selected{% endif %}>8GB</option>
+        <option value="16GB" {% if selected_ram_min == '16GB' %}selected{% endif %}>16GB</option>
+        <option value="32GB" {% if selected_ram_min == '32GB' %}selected{% endif %}>32GB</option>
+      </select>
+    </label>
 
-   <label>
+    <label>
+      最高
+      <select name="ram_max">
+        <option value="">不限制</option>
+        <option value="4GB" {% if selected_ram_max == '4GB' %}selected{% endif %}>4GB</option>
+        <option value="8GB" {% if selected_ram_max == '8GB' %}selected{% endif %}>8GB</option>
+        <option value="16GB" {% if selected_ram_max == '16GB' %}selected{% endif %}>16GB</option>
+        <option value="32GB" {% if selected_ram_max == '32GB' %}selected{% endif %}>32GB</option>
+      </select>
+    </label>
+  </div>
+</div>
+
+<div class="filter-group">
+  <p class="filter-group-title">儲存空間 SSD 範圍</p>
+
+  <div class="filter-row">
+    <label>
+      最低
+      <select name="ssd_min">
+        <option value="">不限制</option>
+        <option value="128GB" {% if selected_ssd_min == '128GB' %}selected{% endif %}>128GB</option>
+        <option value="256GB" {% if selected_ssd_min == '256GB' %}selected{% endif %}>256GB</option>
+        <option value="512GB" {% if selected_ssd_min == '512GB' %}selected{% endif %}>512GB</option>
+        <option value="1024GB" {% if selected_ssd_min == '1024GB' %}selected{% endif %}>1TB</option>
+      </select>
+    </label>
+
+    <label>
+      最高
+      <select name="ssd_max">
+        <option value="">不限制</option>
+        <option value="128GB" {% if selected_ssd_max == '128GB' %}selected{% endif %}>128GB</option>
+        <option value="256GB" {% if selected_ssd_max == '256GB' %}selected{% endif %}>256GB</option>
+        <option value="512GB" {% if selected_ssd_max == '512GB' %}selected{% endif %}>512GB</option>
+        <option value="1024GB" {% if selected_ssd_max == '1024GB' %}selected{% endif %}>1TB</option>
+      </select>
+    </label>
+  </div>
+</div>
     CPU
     <select name="cpu">
       <option value="">全部 CPU</option>

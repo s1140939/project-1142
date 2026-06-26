@@ -336,7 +336,7 @@ def build_analysis(laptops):
     }
 
 
-def filter_laptops(laptops, use_case, budget, ram_filter, ssd_filter, cpu_filter, brand_filter):
+def filter_laptops(laptops, use_case, budget, ram_min, ram_max, ssd_min, ssd_max, cpu_filter, brand_filter):
     filtered = laptops
     if use_case and use_case != '全部用途':
         filtered = [item for item in filtered if item.get('UseCase') == use_case]
@@ -348,11 +348,29 @@ def filter_laptops(laptops, use_case, budget, ram_filter, ssd_filter, cpu_filter
         except ValueError:
             pass
 
-    if ram_filter:
-        filtered = [item for item in filtered if item.get('RAM') == ram_filter]
+    if ram_min:
+        filtered = [
+            item for item in filtered
+            if get_number(item.get('RAM', 0)) >= get_number(ram_min)
+        ]
 
-    if ssd_filter:
-        filtered = [item for item in filtered if item.get('SSD') == ssd_filter]
+    if ram_max:
+        filtered = [
+            item for item in filtered
+            if get_number(item.get('RAM', 0)) <= get_number(ram_max)
+        ]
+
+    if ssd_min:
+        filtered = [
+            item for item in filtered
+            if get_number(item.get('SSD', 0)) >= get_number(ssd_min)
+        ]
+
+    if ssd_max:
+        filtered = [
+            item for item in filtered
+            if get_number(item.get('SSD', 0)) <= get_number(ssd_max)
+        ]
 
     if brand_filter:
         filtered = [item for item in filtered if item.get('brand') == brand_filter]
@@ -370,15 +388,17 @@ def home():
     use_case = request.args.get('use_case', '').strip()
     budget = request.args.get('budget', '').strip()
     sort_by = request.args.get('sort', 'score_desc')
-    ram_filter = request.args.get('ram', '').strip()
-    ssd_filter = request.args.get('ssd', '').strip()
+    ram_min = request.args.get('ram_min', '').strip()
+    ram_max = request.args.get('ram_max', '').strip()
+    ssd_min = request.args.get('ssd_min', '').strip()
+    ssd_max = request.args.get('ssd_max', '').strip()
     cpu_filter = request.args.get('cpu', '').strip()
     brand_filter = request.args.get('brand', '').strip()
 
     laptops = load_laptops()
     analysis = build_analysis(laptops)
 
-    filtered = filter_laptops(laptops,use_case,budget,ram_filter,ssd_filter,cpu_filter,brand_filter)
+    filtered = filter_laptops(laptops,use_case,budget,ram_min,ram_max,ssd_min,ssd_max,cpu_filter,brand_filter)
 
     if sort_by == 'score_desc':
         filtered = sorted(filtered,key=lambda x: x.get('Score', 0),reverse=True)
@@ -399,9 +419,10 @@ def home():
         analysis=analysis,
         selected_use_case=use_case,
         budget=budget,
-        selected_sort=sort_by,
-        selected_ram=ram_filter,
-        selected_ssd=ssd_filter,
+        selected_ram_min=ram_min,
+        selected_ram_max=ram_max,
+        selected_ssd_min=ssd_min,
+        selected_ssd_max=ssd_max,
         selected_cpu=cpu_filter,
         selected_brand=brand_filter,
     )
