@@ -1,11 +1,24 @@
 # 筆電推薦系統 Project 1142
 
-本專案為大一 Python 程式設計期末專題，主題是「筆電推薦系統」。系統會自動取得電商平台上的筆電資料，將商品名稱中的規格資訊整理成可分析的資料，並透過網站與 API 提供查詢、篩選與推薦功能。
+本專案為大一 Python 程式設計期末專題，主題是「筆電推薦系統」。系統會自動取得電商平台上的筆電資料，將商品名稱中的規格資訊整理成可分析的資料，並透過網站與 API 提供查詢、篩選、分析與推薦功能。
 
-目前專案已完成兩條資料流程：
+目前專案已完成從「爬蟲 → 資料庫 → API → 前端網站」的串接流程：
 
-1. **CSV 流程**：爬蟲取得資料後輸出 `frontend/laptop.csv`，前端 Flask 網站讀取 CSV 顯示商品卡片。
-2. **資料庫 / API 流程**：FastAPI 後端可觸發爬蟲，將資料清理後寫入 Neon PostgreSQL，並透過 API 提供資料查詢與推薦結果。
+```text
+PChome 搜尋 API
+        ↓
+backend/crawler.py
+        ↓
+資料清理：品牌 / CPU / RAM / SSD / 價格 / 商品網址
+        ↓
+Neon PostgreSQL
+        ↓
+Render FastAPI
+        ↓
+Vercel Flask 前端網站
+```
+
+前端目前已改為 **優先直接讀取 Render FastAPI**，若 API 暫時無法連線，才會自動改用本地 `frontend/laptop.csv` 作為備援資料。
 
 ---
 
@@ -21,9 +34,9 @@
 
 ## 專案目標
 
-使用者在選購筆電時，常需要比較品牌、CPU、RAM、SSD、價格與使用情境。本專案希望透過 Python 自動化整理電商資料，將原本混在商品名稱中的規格轉換成結構化資料，再依照用途與預算提供推薦結果。
+使用者在選購筆電時，常需要比較品牌、CPU、RAM、SSD、價格與使用情境。本專案希望透過 Python 自動化整理電商資料，將原本混在商品名稱中的規格轉換成結構化資料，再依照用途、預算與規格條件提供推薦結果。
 
-本專案目前可整理的欄位包含：
+本專案目前可整理與展示的欄位包含：
 
 - 商品名稱
 - 品牌
@@ -33,6 +46,9 @@
 - 價格
 - 商品原始網址
 - 商品唯一識別碼 `product_id`
+- 使用情境分類
+- 推薦分數
+- 推薦原因
 
 ---
 
@@ -45,46 +61,52 @@ PChome 搜尋 API
         ↓
 backend/crawler.py
         ↓
-資料清理：品牌 / CPU / RAM / SSD / 價格 / URL
+資料清理與 DataFrame 整理
         ↓
-        ├── CSV 流程：frontend/laptop.csv → Flask 前端 → Vercel
-        │
-        └── 資料庫流程：update_database.py → Neon PostgreSQL → FastAPI → Render
-```
-
-### CSV 流程
-
-```text
-PChome API
-    ↓
-crawler.py
-    ↓
-update_data.py
-    ↓
-frontend/laptop.csv
-    ↓
-frontend/app.py
-    ↓
+update_database.py
+        ↓
+Neon PostgreSQL laptops 資料表
+        ↓
+Render FastAPI
+        ↓
+frontend/app.py 呼叫 /api/laptops
+        ↓
+Flask + Jinja 模板顯示商品卡片
+        ↓
 Vercel 前端網站
 ```
 
-### 後端 API / 資料庫流程
+### API 資料流程
 
 ```text
-POST /api/update
-    ↓
-FastAPI main.py
-    ↓
-update_database.py
-    ↓
-crawler.py 重新抓取 PChome 資料
-    ↓
-清理與去重複
-    ↓
-Neon PostgreSQL laptops 資料表
-    ↓
-/api/laptops、/api/recommend 提供查詢與推薦
+使用者開啟 Vercel 前端
+        ↓
+frontend/app.py
+        ↓
+requests.get("https://project-1142-backend.onrender.com/api/laptops")
+        ↓
+Render FastAPI 從 Neon PostgreSQL 讀取資料
+        ↓
+回傳 JSON
+        ↓
+前端進行用途分類、推薦評分、篩選與排序
+        ↓
+網頁顯示推薦結果
 ```
+
+### CSV 備援流程
+
+```text
+若 Render API 無法連線
+        ↓
+frontend/app.py 例外處理
+        ↓
+改讀 frontend/laptop.csv
+        ↓
+前端仍可維持基本展示功能
+```
+
+CSV 目前作為備援與測試資料來源，主要正式資料來源已改為 Render FastAPI。
 
 ---
 
@@ -95,18 +117,19 @@ project-1142/
 ├── backend/
 │   ├── main.py              # FastAPI 後端入口，提供 API endpoints
 │   ├── crawler.py           # 爬蟲與資料清理主程式
-│   ├── update_data.py       # 更新 frontend/laptop.csv
-│   ├── update_database.py   # FastAPI 觸發爬蟲後更新 PostgreSQL
+│   ├── update_data.py       # 更新 frontend/laptop.csv，作為 CSV 備援資料
+│   ├── update_database.py   # 觸發爬蟲後更新 PostgreSQL
 │   ├── database.py          # PostgreSQL / Neon 資料庫連線
 │   ├── models.py            # SQLAlchemy Laptop 資料表模型
 │   ├── init_db.py           # 建立資料表
 │   ├── import_csv_to_db.py  # 將既有 CSV 匯入資料庫
-│   └── brand_map.py         # 品牌與型號判斷規則
+│   ├── brand_map.py         # 品牌與型號判斷規則
+│   └── requirements.txt     # Render 後端部署套件需求
 │
 ├── frontend/
-│   ├── app.py               # Flask 前端網站主程式
-│   ├── laptop.csv           # 清理後的筆電資料
-│   ├── requirements.txt     # 前端 Flask 所需套件
+│   ├── app.py               # Flask 前端，優先呼叫 Render FastAPI
+│   ├── laptop.csv           # API 無法連線時的備援資料
+│   ├── requirements.txt     # Vercel 前端部署套件需求
 │   ├── static/
 │   │   └── style.css        # 網站樣式
 │   └── templates/
@@ -116,7 +139,9 @@ project-1142/
 │       └── contact.html
 │
 ├── feedback.csv             # 使用者回饋資料
-├── requirements.txt         # Python 套件需求
+├── requirements.txt         # 專案整體套件紀錄:">?
+>
+"?:
 ├── .gitignore               # 忽略 .env、__pycache__ 等檔案
 └── README.md
 ```
@@ -128,7 +153,8 @@ project-1142/
 | 類別 | 技術 |
 |---|---|
 | 程式語言 | Python |
-| 前端網站 | Flask、HTML、CSS |
+| 前端網站 | Flask、Jinja2、HTML、CSS |
+| 前端資料串接 | requests 呼叫 Render FastAPI |
 | 後端 API | FastAPI、Uvicorn |
 | 資料庫 | PostgreSQL、Neon |
 | ORM | SQLAlchemy |
@@ -183,7 +209,7 @@ pandas 建立 DataFrame
         ↓
 根據商品名稱去重複
         ↓
-輸出 CSV 或回傳 DataFrame 給資料庫更新流程
+回傳 DataFrame 給資料庫更新流程，或輸出 CSV 作為備援
 ```
 
 ### 品牌辨識
@@ -203,7 +229,7 @@ r"IdeaPad": "Lenovo"
 r"Surface": "Microsoft"
 ```
 
-若商品名稱中沒有明顯品牌或系列名稱，則會再透過 `model_map` 以型號規則補充判斷。
+若商品名稱中沒有明顯品牌或系列名稱，則會再透過型號規則補充判斷。
 
 ### CPU 擷取
 
@@ -249,9 +275,21 @@ r"Surface": "Microsoft"
 
 ---
 
-## CSV 欄位說明
+## CSV 備援資料
 
-`frontend/laptop.csv` 目前包含以下欄位：
+雖然目前前端已改為優先讀取 Render FastAPI，但專案仍保留：
+
+```text
+frontend/laptop.csv
+```
+
+此 CSV 用於：
+
+1. API 暫時無法連線時的備援資料
+2. 本機測試前端畫面
+3. 展示原本 CSV 流程的開發成果
+
+CSV 欄位包含：
 
 | 欄位 | 說明 |
 |---|---|
@@ -263,11 +301,11 @@ r"Surface": "Microsoft"
 | `price` | 商品價格 |
 | `url` | 商品在 PChome 的原始網址 |
 
-CSV 範例：
+更新 CSV：
 
-```csv
-name,brand,RAM,SSD,CPU,price,url
-Vivobook Go 14...,ASUS,4GB,128GB,Celeron N4500,7999,https://24h.pchome.com.tw/prod/...
+```bash
+cd backend
+python update_data.py
 ```
 
 ---
@@ -401,24 +439,47 @@ crawl_laptops(save_csv=False)
 frontend/app.py
 ```
 
-目前前端仍以 `frontend/laptop.csv` 為主要資料來源，提供以下功能：
+目前前端已完成「由 CSV 改為直接讀取 Render FastAPI」的串接。
+
+核心設定：
+
+```python
+API_BASE_URL = os.getenv(
+    "API_BASE_URL",
+    "https://project-1142-backend.onrender.com"
+)
+
+API_URL = f"{API_BASE_URL}/api/laptops"
+```
+
+資料讀取邏輯：
+
+```text
+load_laptops()
+        ↓
+優先執行 load_laptops_from_api()
+        ↓
+requests.get(API_URL)
+        ↓
+若成功，使用 API 回傳資料
+        ↓
+若失敗，進入 except，改用 load_laptops_from_csv()
+```
+
+前端提供以下功能：
 
 - 顯示筆電商品卡片
 - 依用途分類：日常 / 學習、商務、創作 / 專業、影音 / 娛樂
 - 輸入預算進行篩選
+- 依 RAM 範圍篩選
+- 依 SSD 範圍篩選
+- 依 CPU 關鍵字篩選
+- 依品牌篩選
 - 依推薦分數或價格排序
+- 顯示商品分析圖表資料
 - 顯示推薦原因
 - 點擊「了解更多」前往商品原始網址
-
-目前後端 API 已部署完成，下一步可將前端資料來源由 CSV 改為 Render FastAPI：
-
-```text
-frontend/app.py
-    ↓
-requests.get("<Render 後端網址>/api/laptops")
-    ↓
-顯示 API 回傳資料
-```
+- API 失敗時自動使用 CSV 備援
 
 ---
 
@@ -434,6 +495,14 @@ DATABASE_URL=postgresql://使用者:密碼@主機/laptop_db?sslmode=require
 
 `.env` 內含資料庫帳密，不應上傳 GitHub。
 
+前端若要指定不同後端，也可以設定：
+
+```env
+API_BASE_URL=https://project-1142-backend.onrender.com
+```
+
+若未設定，`frontend/app.py` 會使用預設的 Render 後端網址。
+
 ---
 
 ### 2. 初始化資料庫
@@ -445,9 +514,10 @@ python init_db.py
 
 ---
 
-### 3. 更新 CSV
+### 3. 更新 CSV 備援資料
 
 ```bash
+cd backend
 python update_data.py
 ```
 
@@ -462,6 +532,7 @@ frontend/laptop.csv
 ### 4. 匯入既有 CSV 到資料庫
 
 ```bash
+cd backend
 python import_csv_to_db.py
 ```
 
@@ -498,6 +569,28 @@ cd frontend
 python app.py
 ```
 
+開啟：
+
+```text
+http://127.0.0.1:5000
+```
+
+啟動後，前端會優先向 Render FastAPI 取得資料。若終端機出現：
+
+```text
+使用 API 讀取資料，筆數：...
+```
+
+代表前端已成功讀取 Render 後端資料。
+
+若 API 讀取失敗，會出現：
+
+```text
+API 讀取失敗，改用 CSV：...
+```
+
+此時前端會自動改用 `frontend/laptop.csv`。
+
 ---
 
 ## Render 後端部署設定
@@ -514,19 +607,13 @@ python app.py
 | Environment Variable | `DATABASE_URL` |
 | Database | Neon PostgreSQL |
 
-若 `requirements.txt` 放在專案根目錄而不是 `backend/`，Render 的 Build Command 需依實際路徑調整，例如：
-
-```bash
-pip install -r ../requirements.txt
-```
-
 部署完成後可測試：
 
 ```text
-<Render 後端網址>/
-<Render 後端網址>/api/health
-<Render 後端網址>/api/laptops
-<Render 後端網址>/docs
+https://project-1142-backend.onrender.com/
+https://project-1142-backend.onrender.com/api/health
+https://project-1142-backend.onrender.com/api/laptops
+https://project-1142-backend.onrender.com/docs
 ```
 
 ---
@@ -539,26 +626,27 @@ pip install -r ../requirements.txt
 https://project-1142.vercel.app/
 ```
 
-目前 Vercel 前端主要讀取 CSV 資料。若後續改為讀取 Render API，需將前端中的資料讀取邏輯改為呼叫：
+目前 Vercel 前端會直接呼叫 Render FastAPI：
 
 ```text
-<Render 後端網址>/api/laptops
+https://project-1142-backend.onrender.com/api/laptops
 ```
 
-或：
+建議在 Vercel 的 Environment Variables 設定：
 
 ```text
-<Render 後端網址>/api/recommend
+API_BASE_URL=https://project-1142-backend.onrender.com
 ```
+
+這樣未來若後端網址更換，只需要改 Vercel 環境變數，不必修改程式碼。
 
 ---
 
 ## GitHub 協作與版本紀錄
 
-本專案使用 GitHub 管理版本，開發過程包含多次 commit，紀錄了從爬蟲測試、API 路徑確認、品牌判斷、CPU 擷取、資料去重複、CSV 更新機制，到 FastAPI / PostgreSQL / Render 部署的完整開發歷程。
+本專案使用 GitHub 管理版本，開發過程包含多次 commit，紀錄了從爬蟲測試、API 路徑確認、品牌判斷、CPU 擷取、資料去重複、CSV 更新機制，到 FastAPI / PostgreSQL / Render 部署，以及前端改讀 Render API 、篩選機制變更的完整開發歷程。
 
 ---
-
 
 ## 目前完成進度
 
@@ -568,7 +656,10 @@ https://project-1142.vercel.app/
 - 筆電商品名稱、價格、網址擷取
 - 品牌、CPU、RAM、SSD 規格整理
 - CSV 輸出與更新機制
+- CSV 備援讀取機制
 - Flask 前端網站
+- 前端改為優先讀取 Render FastAPI
+- 前端篩選、排序、推薦分數與商品分析
 - Vercel 前端部署
 - Neon PostgreSQL 資料庫
 - SQLAlchemy 資料表模型
@@ -576,14 +667,15 @@ https://project-1142.vercel.app/
 - FastAPI 後端 API
 - `POST /api/update` 觸發爬蟲更新資料庫
 - Render 後端部署
+- Vercel 前端串接 Render 後端 API
 
 後續可改進：
 
-- 將前端由讀取 CSV 改為直接讀取 Render FastAPI
 - 將 CORS `allow_origins=["*"]` 改為只允許正式前端網址
 - 增加定期自動更新資料庫機制
 - 增加更多資料來源或商品平台
 - 改善推薦演算法，例如加入 GPU、重量、螢幕尺寸與使用者偏好權重
+- 將前端推薦邏輯逐步搬到後端 `/api/recommend`，讓前端更單純負責畫面呈現
 - 增加使用者回饋資料分析
 
 ---
@@ -598,26 +690,29 @@ git rm --cached .env
 git commit -m "Remove env file from git tracking"
 ```
 
-3. `__pycache__/` 與 `*.pyc` 不應上傳 GitHub。
+3. `__pycache__/`、`*.pyc` 與 `.git/` 不應放入繳交壓縮檔或手動上傳檔案。
 4. Render Free 服務在一段時間沒有流量後可能休眠，因此第一次開啟 API 可能需要等待較久。
 5. `/api/update` 會重新爬資料並寫入資料庫，執行時間會比一般查詢 API 更久。
+6. 目前前端具備 CSV fallback，因此即使 API 暫時失敗，仍可維持基本展示。
 
 ---
 
 ## Demo 建議流程
 
 1. 開啟前端網站：`https://project-1142.vercel.app/`
-2. 展示使用者可依用途、預算、排序查看推薦商品
-3. 開啟後端 API：`<Render 後端網址>/docs`
-4. 執行 `GET /api/health`，確認資料庫連線與資料筆數
-5. 執行 `GET /api/laptops`，展示資料庫中的筆電資料
-6. 執行 `GET /api/recommend`，展示後端推薦 API
-7. 執行 `POST /api/update`，展示可由 API 觸發爬蟲更新資料庫
+2. 展示前端頁面可正常載入 Render API 資料
+3. 展示使用者可依用途、預算、RAM、SSD、CPU、品牌與排序方式查看推薦商品
+4. 點擊「了解更多」，展示可連到 PChome 商品原始頁面
+5. 開啟後端 API 文件：`https://project-1142-backend.onrender.com/docs`
+6. 執行 `GET /api/health`，確認資料庫連線與資料筆數
+7. 執行 `GET /api/laptops`，展示資料庫中的筆電資料
+8. 執行 `GET /api/recommend`，展示後端推薦 API
+9. 視時間執行 `POST /api/update`，展示可由 API 觸發爬蟲更新資料庫
 
 ---
 
 ## 專案總結
 
-本專案從原本單純的 CSV 爬蟲與前端展示，逐步擴充為包含資料庫與 API 的完整系統。透過 PChome API、資料清理、CSV、Flask、FastAPI、Neon PostgreSQL、Render 與 Vercel，完成了從資料取得、規格分析、資料儲存、API 查詢到網站展示的整合流程。
+本專案從原本單純的 CSV 爬蟲與前端展示，逐步擴充為包含資料庫、API、前後端部署與前端 API 串接的完整系統。透過 PChome API、資料清理、CSV 備援、Flask、FastAPI、Neon PostgreSQL、Render 與 Vercel，完成了從資料取得、規格分析、資料儲存、API 查詢到網站展示的整合流程。
 
-目前系統已具備期末專題所需的資料蒐集、資料處理、網頁展示、GitHub 協作、前端部署與後端部署成果，也保留後續將前端完全串接 FastAPI 的延伸空間。
+目前系統已具備期末專題所需的資料蒐集、資料處理、網頁展示、GitHub 協作、前端部署、後端部署與前後端串接成果。整體架構已從「讀取本地 CSV」升級為「前端直接讀取雲端 FastAPI」，更接近實際產品的資料流設計。
